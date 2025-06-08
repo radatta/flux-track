@@ -37,6 +37,6 @@ next-env.d.ts
 
 .env
 
-supabase/
-
 .cursor/
+
+supabase/.temp/
