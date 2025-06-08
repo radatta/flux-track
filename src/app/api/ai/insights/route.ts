@@ -1,8 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { openai } from '@ai-sdk/openai';
-import { generateText } from 'ai';
+import { generateText, generateObject } from 'ai';
 import { getLogById, writeLog } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import z from 'zod';
+import { SentimentSchema, TagSchema } from '@/app/dashboard/page';
 
 
 export async function POST(req: NextRequest) {
@@ -23,15 +25,31 @@ export async function POST(req: NextRequest) {
         }
 
         // Perform AI insights using OpenAI
-        const insights = await generateText({
+        const summary = await generateText({
             model: openai('gpt-4o-mini'),
-            prompt: `Summarize following log entry in 5-10 words: ${log.notes}`,
+            prompt: `Summarize following log entry in 5-10 words: ${log.notes} \n\n Mood: ${log.mood} \n\n Energy: ${log.energy}`,
+        });
+
+        // Sentiment analysis using OpenAI
+        const sentiment = await generateObject({
+            model: openai('gpt-4o-mini'),
+            schema: SentimentSchema,
+            prompt: `Analyze the sentiment of the following log entry. Log: ${log.notes} \n\n Mood: ${log.mood} \n\n Energy: ${log.energy}`,
+        });
+
+        // Tag extraction using OpenAI
+        const tags = await generateObject({
+            model: openai('gpt-4o-mini'),
+            schema: z.array(TagSchema),
+            prompt: `Extract keywords from the following log entry. Log: ${log.notes} \n\n Mood: ${log.mood} \n\n Energy: ${log.energy}`,
         });
 
         await writeLog(supabase, {
             ...log,
             // ai_recommendations: insights.text,
-            ai_summary: insights.text,
+            ai_summary: summary.text,
+            sentiment: sentiment.object,
+            tags: tags.object.map((tag) => tag.tag),
         });
 
         // Respond with the insights

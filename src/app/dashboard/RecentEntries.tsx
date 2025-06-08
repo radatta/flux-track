@@ -19,6 +19,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Clock, FileText } from "lucide-react";
 import { Entry } from "./page";
+import Link from "next/link";
 
 function getMoodColor(mood: number) {
   if (mood >= 8) return "bg-green-500";
@@ -88,10 +89,12 @@ export function RecentEntriesTable({ entries }: { entries: Entry[] }) {
               {entries.map((entry) => (
                 <TableRow key={entry.id}>
                   <TableCell className="font-medium">
-                    {new Date(entry.created_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    <Link href={`/log/${entry.id}`}>
+                      {new Date(entry.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
