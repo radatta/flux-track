@@ -81,7 +81,7 @@ export function RecentEntriesTable({ entries }: { entries: Entry[] }) {
                 <TableHead>Date</TableHead>
                 <TableHead>Mood</TableHead>
                 <TableHead>Energy</TableHead>
-                <TableHead>Notes</TableHead>
+                <TableHead>Summary</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -120,7 +120,7 @@ export function RecentEntriesTable({ entries }: { entries: Entry[] }) {
                   </TableCell>
                   <TableCell className="max-w-xs">
                     <span className="text-sm text-[#2D3748]/70">
-                      {truncateNotes(entry.notes)}
+                      {truncateNotes(entry.ai_summary)}
                     </span>
                   </TableCell>
                 </TableRow>

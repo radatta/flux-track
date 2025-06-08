@@ -14,7 +14,7 @@ export const EntrySchema = z.object({
   created_at: z.string(),
   mood: z.number(),
   energy: z.number(),
-  notes: z.string().nullable(),
+  ai_summary: z.string().nullable(),
 });
 
 // Use the Zod schema for type checking

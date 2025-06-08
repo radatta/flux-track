@@ -58,15 +58,26 @@ export function LogEntryForm() {
       }
 
       const data = await res.json();
-      console.log(data);
 
       mutate("/api/log");
       toast.success("Entry logged successfully! 🎉");
-
       // Reset form
       setMood("");
       setEnergy("");
       setNotes("");
+
+      const res2 = await fetch("/api/ai/insights", {
+        method: "POST",
+        body: JSON.stringify({ logId: data.id }),
+      });
+
+      if (!res2.ok) {
+        throw new Error("Failed to fetch AI insights");
+      }
+      await res2.json();
+
+      mutate("/api/log");
+      toast.success("AI insights generated successfully! 🎉");
     } catch (error) {
       console.error(error);
       toast.error("Failed to log entry. Please try again.");
