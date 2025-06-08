@@ -1,59 +1,145 @@
+"use client";
+
+import type React from "react";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useUser } from "@/hooks/useUser";
+import { Loader2, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 
-export default function LogEntryForm() {
-  const { user, loading } = useUser();
+export function LogEntryForm() {
+  const [mood, setMood] = useState("");
+  const [energy, setEnergy] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (loading) return <div>Loading...</div>;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!user) {
-      toast.error("User not found");
+    // Client-side validation
+    const moodNum = Number.parseInt(mood);
+    const energyNum = Number.parseInt(energy);
+
+    if (!mood || !energy) {
+      toast.error(
+        "Missing fields: Please fill in both mood and energy levels."
+      );
       return;
     }
-    const formData = new FormData(event.currentTarget);
-    const payload = {
-      user_id: user.id,
-      mood: formData.get("mood"),
-      energy: formData.get("energy"),
-      notes: formData.get("notes"),
-    };
-    const res = await fetch("/api/log", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      toast.error(data.error || "Failed to log entry");
-    } else {
-      toast.success("Entry logged successfully");
-      event.currentTarget.reset();
+
+    if (moodNum < 1 || moodNum > 10 || energyNum < 1 || energyNum > 10) {
+      toast.error("Invalid values: Mood and energy must be between 1 and 10.");
+      return;
     }
-  }
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/api/log", {
+        method: "POST",
+        body: JSON.stringify({ mood, energy, notes }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to log entry");
+      }
+
+      const data = await res.json();
+      console.log(data);
+
+      toast.success("Entry logged successfully! 🎉");
+
+      // Reset form
+      setMood("");
+      setEnergy("");
+      setNotes("");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to log entry. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mb-8 p-4 bg-card rounded-lg shadow-sm"
-    >
-      <div className="flex gap-4 mb-4">
-        <div className="flex-1">
-          <Label>Mood (1-10)</Label>
-          <Input type="number" name="mood" min="1" max="10" required />
-        </div>
-        <div className="flex-1">
-          <Label>Energy (1-10)</Label>
-          <Input type="number" name="energy" min="1" max="10" required />
-        </div>
-      </div>
-      <Textarea name="notes" placeholder="Optional notes..." className="mb-4" />
-      <Button type="submit">Log Entry</Button>
-    </form>
+    <Card className="bg-white border-[#6B8EFF]/20">
+      <CardHeader>
+        <CardTitle className="flex items-center space-x-2 text-[#2D3748]">
+          <Plus className="h-5 w-5 text-[#6B8EFF]" />
+          <span>Log Today&apos;s Entry</span>
+        </CardTitle>
+        <CardDescription>
+          Track your mood and energy levels for today
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="mood">Mood (1-10)</Label>
+              <Input
+                id="mood"
+                type="number"
+                min="1"
+                max="10"
+                value={mood}
+                onChange={(e) => setMood(e.target.value)}
+                placeholder="7"
+                className="border-[#6B8EFF]/20 focus:border-[#6B8EFF]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="energy">Energy (1-10)</Label>
+              <Input
+                id="energy"
+                type="number"
+                min="1"
+                max="10"
+                value={energy}
+                onChange={(e) => setEnergy(e.target.value)}
+                placeholder="6"
+                className="border-[#6B8EFF]/20 focus:border-[#6B8EFF]"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes (optional)</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="How are you feeling today? Any thoughts or observations..."
+              className="border-[#6B8EFF]/20 focus:border-[#6B8EFF] min-h-[80px]"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-[#6B8EFF] hover:bg-[#6B8EFF]/90"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Logging...
+              </>
+            ) : (
+              "Log Entry"
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
