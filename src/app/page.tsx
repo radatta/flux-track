@@ -1,7 +1,153 @@
-export default function Home() {
+import type React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  BarChart2,
+  Brain,
+  LineChart,
+  Sparkles,
+} from "lucide-react";
+
+export default function LandingPage() {
   return (
-    <div>
-      <h1 className="text-3xl font-bold underline">Hello World</h1>
+    <div className="min-h-screen bg-[#F8F9FF] text-[#2D3748]">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 pt-24 pb-16 md:pt-32 md:pb-24">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-[#6B8EFF] to-[#A0D8FF] bg-clip-text text-transparent">
+            Track your mood. Discover your patterns.
+          </h1>
+          <p className="text-lg md:text-xl mb-8 text-[#2D3748]/80">
+            FluxTrack helps you understand your emotional patterns with
+            AI-powered insights and beautiful visualizations.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              asChild
+              className="bg-[#6B8EFF] hover:bg-[#6B8EFF]/90 text-white px-8 py-6 rounded-lg text-lg"
+            >
+              <Link href="/auth/signup">
+                Get Started <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="border-[#6B8EFF] text-[#6B8EFF] hover:bg-[#6B8EFF]/10 px-8 py-6 rounded-lg text-lg"
+            >
+              <Link href="/auth/signin">Sign In</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+          Why FluxTrack?
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <FeatureCard
+            icon={<BarChart2 className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Track Daily Moods"
+            description="Quickly log your mood and energy levels with a simple, intuitive interface."
+          />
+          <FeatureCard
+            icon={<LineChart className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Visualize Trends"
+            description="See patterns in your emotional wellbeing with beautiful, insightful charts."
+          />
+          <FeatureCard
+            icon={<Sparkles className="h-8 w-8 text-[#6B8EFF]" />}
+            title="AI-Powered Insights"
+            description="Receive personalized recommendations based on your mood patterns."
+          />
+          <FeatureCard
+            icon={<Brain className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Smart Analysis"
+            description="Our AI analyzes your entries to identify triggers and patterns."
+          />
+          <FeatureCard
+            icon={<ArrowRight className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Personalized Prompts"
+            description="Get journal prompts tailored to your current emotional state."
+          />
+          <FeatureCard
+            icon={<ArrowRight className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Semantic Search"
+            description="Find past entries based on emotions and themes, not just keywords."
+          />
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="container mx-auto px-4 py-16 md:py-24">
+        <div className="max-w-3xl mx-auto text-center bg-gradient-to-r from-[#6B8EFF]/10 to-[#A0D8FF]/10 p-8 md:p-12 rounded-2xl">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Start your journey today
+          </h2>
+          <p className="text-lg mb-8">
+            Join thousands of others who are discovering insights about their
+            emotional wellbeing.
+          </p>
+          <Button
+            asChild
+            className="bg-[#6B8EFF] hover:bg-[#6B8EFF]/90 text-white px-8 py-6 rounded-lg text-lg"
+          >
+            <Link href="/signup">
+              Create your account <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="container mx-auto px-4 py-8 border-t border-[#6B8EFF]/10">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <p className="text-[#2D3748]/60 mb-4 md:mb-0">
+            © 2023 FluxTrack. All rights reserved.
+          </p>
+          <div className="flex gap-6">
+            <Link
+              href="/terms"
+              className="text-[#2D3748]/60 hover:text-[#6B8EFF]"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-[#2D3748]/60 hover:text-[#6B8EFF]"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/contact"
+              className="text-[#2D3748]/60 hover:text-[#6B8EFF]"
+            >
+              Contact
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-[#6B8EFF]/10">
+      <div className="mb-4">{icon}</div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-[#2D3748]/70">{description}</p>
     </div>
   );
 }
