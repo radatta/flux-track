@@ -20,6 +20,7 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import { format } from "date-fns";
 import { TrendingUp } from "lucide-react";
 import { Entry } from "./page";
 
@@ -35,6 +36,11 @@ const chartConfig = {
 };
 
 export function TrendVisualization({ entries }: { entries: Entry[] }) {
+  const sortedEntries = [...entries].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
   return (
     <Card className="bg-white border-[#6B8EFF]/20">
       <CardHeader>
@@ -50,11 +56,16 @@ export function TrendVisualization({ entries }: { entries: Entry[] }) {
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={entries}
+              data={sortedEntries}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#6B8EFF20" />
-              <XAxis dataKey="date" stroke="#2D3748" fontSize={12} />
+              <XAxis
+                dataKey="created_at"
+                stroke="#2D3748"
+                fontSize={12}
+                tickFormatter={(value) => format(new Date(value), "MMM d")}
+              />
               <YAxis domain={[1, 10]} stroke="#2D3748" fontSize={12} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line
