@@ -4,9 +4,9 @@ import { HeaderSection } from "./Header";
 import { LogEntryForm } from "./LogEntryForm";
 import { TrendVisualization } from "./TrendCharts";
 import { RecentEntriesTable } from "./RecentEntries";
-import { useEffect, useState } from "react";
 import { z } from "zod";
 import { publicLogsRowSchema } from "@/schemas";
+import useSWR from "swr";
 
 // Define the Zod schema for an entry
 export const EntrySchema = z.object({
@@ -20,35 +20,31 @@ export const EntrySchema = z.object({
 // Use the Zod schema for type checking
 export type Entry = z.infer<typeof EntrySchema>;
 
+// Define a fetcher function
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function DashboardPage() {
-  const [entries, setEntries] = useState<Entry[]>([]);
-  const [averageMood, setAverageMood] = useState(0);
-  const [averageEnergy, setAverageEnergy] = useState(0);
+  const { data, error } = useSWR("/api/log", fetcher);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/log");
-        const data = await res.json();
+  // Correct Zod validation handling
+  const validation = data
+    ? z.array(publicLogsRowSchema).safeParse(data.entries)
+    : { success: false, data: [], error: null };
 
-        // Validate data using Zod schema
-        const validation = z.array(publicLogsRowSchema).safeParse(data.entries);
-        if (!validation.success) {
-          console.error("Data validation failed", validation.error.errors);
-          return;
-        }
+  if (!validation.success) {
+    console.error("Data validation failed", validation.error?.errors);
+    return null;
+  }
 
-        const validData = validation.data;
-        setEntries(validData);
-        setAverageMood(data.average_mood);
-        setAverageEnergy(data.average_energy);
-      } catch (error) {
-        console.error("Failed to fetch entries", error);
-      }
-    };
+  const validData = validation.success ? validation.data : [];
+  const entries = validData;
+  const averageMood = data?.average_mood || 0;
+  const averageEnergy = data?.average_energy || 0;
 
-    fetchData();
-  }, []);
+  if (error) {
+    console.error("Failed to fetch entries", error);
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FF] p-4 md:p-6">

@@ -16,12 +16,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSWRConfig } from "swr";
 
 export function LogEntryForm() {
   const [mood, setMood] = useState("");
   const [energy, setEnergy] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { mutate } = useSWRConfig();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +60,7 @@ export function LogEntryForm() {
       const data = await res.json();
       console.log(data);
 
+      mutate("/api/log");
       toast.success("Entry logged successfully! 🎉");
 
       // Reset form
