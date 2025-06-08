@@ -1,15 +1,22 @@
-import { redirect } from "next/navigation";
+"use client";
 
-import { createClient } from "@/utils/supabase/server";
+import Header from "./Header";
+import LogEntryForm from "./LogEntryForm";
+import { useUser } from "@/hooks/useUser";
 
-export default async function PrivatePage() {
-  const supabase = await createClient();
+export default function Dashboard() {
+  const { user, loading } = useUser();
 
-  const { data, error } = await supabase.auth.getUser();
+  if (loading) return <div>Loading...</div>;
 
-  if (error || !data?.user) {
-    redirect("/error");
-  }
+  if (!user) return <></>;
 
-  return <p>Hello {data.user.email}</p>;
+  return (
+    <div className="p-4 max-w-4xl mx-auto">
+      <Header user={user!} />
+      <LogEntryForm />
+      {/* <DataVisualization logs={logs} />
+      <RecentEntries logs={logs} /> */}
+    </div>
+  );
 }
