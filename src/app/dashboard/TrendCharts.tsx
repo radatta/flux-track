@@ -22,7 +22,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { TrendingUp } from "lucide-react";
-import { Entry } from "./page";
+import { Entry } from "@/lib/db";
 
 const chartConfig = {
   mood: {

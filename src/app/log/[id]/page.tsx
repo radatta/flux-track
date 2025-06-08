@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 import { getLogById } from "@/lib/db";
 import { useParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { Sentiment } from "@/app/dashboard/page";
+import { Sentiment } from "@/lib/db";
 
 function getMoodIcon(mood: number) {
   if (mood >= 8) return <Smile className="h-6 w-6" />;

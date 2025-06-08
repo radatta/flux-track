@@ -7,30 +7,8 @@ import { RecentEntriesTable } from "./RecentEntries";
 import { z } from "zod";
 import { publicLogsRowSchema } from "@/schemas";
 import useSWR from "swr";
+import { toast } from "react-hot-toast";
 
-export const EntrySchema = z.object({
-  id: z.string(),
-  created_at: z.string(),
-  mood: z.number(),
-  energy: z.number(),
-  ai_summary: z.string().nullable(),
-});
-
-export type Entry = z.infer<typeof EntrySchema>;
-
-export const SentimentSchema = z.object({
-  sentiment: z.enum(["positive", "neutral", "negative"]),
-  confidence: z.number(),
-});
-
-export type Sentiment = z.infer<typeof SentimentSchema>;
-
-export const TagSchema = z.object({
-  tag: z.string(),
-  confidence: z.number(),
-});
-
-export type Tag = z.infer<typeof TagSchema>;
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -54,7 +32,7 @@ export default function DashboardPage() {
 
   if (error) {
     console.error("Failed to fetch entries", error);
-    return null;
+    toast.error("Failed to fetch entries");
   }
 
   return (

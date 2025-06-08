@@ -4,7 +4,7 @@ import { generateText, generateObject } from 'ai';
 import { getLogById, writeLog } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import z from 'zod';
-import { SentimentSchema, TagSchema } from '@/app/dashboard/page';
+import { SentimentSchema, TagSchema } from '@/lib/db';
 
 
 export async function POST(req: NextRequest) {

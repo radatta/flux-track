@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { Clock, FileText } from "lucide-react";
-import { Entry } from "./page";
+import { Entry } from "@/lib/db";
 import Link from "next/link";
 
 function getMoodColor(mood: number) {
