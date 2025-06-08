@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FluxTrack
 
-## Getting Started
+## App Concept: Mood & Energy Journal (Working Title)
 
-First, run the development server:
+You’re building a personal Mood & Energy Journal web app designed for individual daily use. The app lets users quickly log their mood and energy levels, add notes, and visualize trends over time. It stands out by leveraging advanced AI to provide smart insights, personalized prompts, sentiment analysis, and actionable recommendations—making it more than just a basic tracker.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Quick Mood/Energy Logging:** Simple, fast input for daily states.
+- **Notes & Tags:** Optional free-text notes and auto-tagging via AI.
+- **Trends & Visualization:** Charts and stats to show patterns over time.
+- **AI-Powered Insights:**
+  - Sentiment/emotion analysis of entries
+  - Summarization and keyword extraction
+  - Personalized journal prompts
+  - Pattern detection and weekly insights
+  - Smart activity and micro-goal suggestions
+- **Semantic Search:** Find relevant past entries using AI embeddings.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Development Stack & Approach
 
-## Learn More
+- **Framework:** Next.js 14 (App Router, Server Actions, Turbopack for speed)
+- **Styling:** Tailwind CSS for rapid, responsive UI
+- **UI Components:** shadcn/ui for modern, accessible design
+- **State/Storage:** Supabase
+- **Deployment:** Vercel for seamless hosting and previews
+- **AI Integration:**
 
-To learn more about Next.js, take a look at the following resources:
+  - OpenAI for LLM tasks (prompt chaining, summarization, sentiment, recommendations)
+  - Embeddings and vector search (Supabase Vector) for semantic search and clustering
+  - Retrieval-augmented generation (RAG) for context-aware AI responses
+  - Multi-step LLM workflows for deeper insights (not just single prompts)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Developer Tools:**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+  - Cursor for AI-assisted coding
+  - Prettier/ESLint for code quality
+  - Vercel AI SDK for orchestrating advanced AI flows
+  - Zod
+  - Bun
 
-## Deploy on Vercel
+- **Authentication:** Supabase authentication
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This approach ensures you’re using the latest, most effective tools in web and AI development, while keeping the app personal, practical, and extensible for future enhancements.
