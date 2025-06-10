@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { openai } from "@ai-sdk/openai";
-import { generateText, generateObject } from "ai";
+import { generateText, generateObject, embed } from "ai";
 import { getLogById, writeLog } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
@@ -25,6 +25,11 @@ export async function POST(req: NextRequest) {
       console.error("Log not found");
       return NextResponse.json({ error: "Log not found" }, { status: 404 });
     }
+
+    const { embedding } = await embed({
+      model: openai.embedding("text-embedding-3-small"),
+      value: log.notes,
+    });
 
     // Perform AI insights using OpenAI
     const summary = await generateText({
@@ -54,6 +59,7 @@ export async function POST(req: NextRequest) {
       ai_summary: summary.text,
       sentiment: sentiment.object,
       tags: tags.object.tags.map((tag) => tag.tag),
+      embedding: JSON.stringify(embedding),
     });
 
     // Respond with the insights

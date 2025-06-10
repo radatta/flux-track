@@ -64,24 +64,28 @@ export function LogEntryForm() {
       setEnergy("");
       setNotes("");
 
-      const res2 = await fetch("/api/ai/insights", {
-        method: "POST",
-        body: JSON.stringify({ logId: data.id }),
-      });
-
-      if (!res2.ok) {
-        throw new Error("Failed to fetch AI insights");
-      }
-      await res2.json();
-
-      mutate("/api/log");
-      toast.success("AI insights generated successfully! 🎉");
+      setIsSubmitting(false);
+      await handleAIInsights(data.id);
     } catch (error) {
       console.error(error);
       toast.error("Failed to log entry. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAIInsights = async (logId: string) => {
+    const res = await fetch("/api/ai/insights", {
+      method: "POST",
+      body: JSON.stringify({ logId }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch AI insights");
+    }
+    await res.json();
+
+    mutate("/api/log");
+    toast.success("AI insights generated successfully! 🎉");
   };
 
   return (
