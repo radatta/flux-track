@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Define public paths
-    const PUBLIC_PATHS = ['/auth/signup', '/auth/signin'];
+    const PUBLIC_PATHS = ['/auth/signup', '/auth/signin', '/'];
 
     // If not logged in, only allow public paths
     if (!user) {
@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // If logged in and at /signup or /signin, redirect to /dashboard
-    if (PUBLIC_PATHS.includes(pathname)) {
+    if (PUBLIC_PATHS.includes(pathname) && pathname !== '/') {
         const url = request.nextUrl.clone();
         url.pathname = '/dashboard';
         return NextResponse.redirect(url);

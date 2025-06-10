@@ -8,6 +8,7 @@ import {
   LineChart,
   Sparkles,
 } from "lucide-react";
+import OneTapComponent from "@/components/OneTapComponent";
 
 export default function LandingPage() {
   return (
@@ -41,6 +42,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <OneTapComponent />
 
       {/* Features Section */}
       <section className="container mx-auto px-4 py-16">
