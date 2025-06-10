@@ -38,6 +38,7 @@ const OneTapComponent = () => {
           console.error("Error getting session", error);
         }
         if (data.session) {
+          console.log("Session data: ", data.session);
           if (pathname !== "/") {
             router.push("/dashboard");
           }
@@ -75,7 +76,7 @@ const OneTapComponent = () => {
     };
     initializeGoogleOneTap();
     return () => window.removeEventListener("load", initializeGoogleOneTap);
-  }, [router, supabase.auth]);
+  }, [router, supabase.auth, pathname]);
 
   return (
     <>

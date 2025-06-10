@@ -42,7 +42,9 @@ export async function POST(req: NextRequest) {
     // Tag extraction using OpenAI
     const tags = await generateObject({
       model: openai("gpt-4o-mini"),
-      schema: z.array(TagSchema),
+      schema: z.object({
+        tags: z.array(TagSchema),
+      }),
       prompt: `Extract keywords from the following log entry. Log: ${log.notes} \n\n Mood: ${log.mood} \n\n Energy: ${log.energy}`,
     });
 
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
       // ai_recommendations: insights.text,
       ai_summary: summary.text,
       sentiment: sentiment.object,
-      tags: tags.object.map((tag) => tag.tag),
+      tags: tags.object.tags.map((tag) => tag.tag),
     });
 
     // Respond with the insights

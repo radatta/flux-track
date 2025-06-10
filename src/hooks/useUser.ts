@@ -27,7 +27,10 @@ export function useUser() {
         }
       } catch (err) {
         if (isMounted) {
-          toast.error(err as string);
+          const message = err instanceof Error ? err.message : String(err);
+          if (message !== "Auth session missing!") {
+            toast.error(message);
+          }
         }
       } finally {
         if (isMounted) setLoading(false);

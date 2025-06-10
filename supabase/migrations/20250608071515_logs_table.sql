@@ -1,5 +1,5 @@
 -- Enable pgvector extension
-create extension if not exists vector;
+create extension if not exists vector with schema public;
 
 create table logs (
   id uuid primary key default gen_random_uuid(),
