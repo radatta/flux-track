@@ -16,7 +16,7 @@ export const jsonSchema: z.ZodSchema<Json> = z.lazy(() =>
       z.record(z.union([jsonSchema, z.undefined()])),
       z.array(jsonSchema),
     ])
-    .nullable(),
+    .nullable()
 );
 
 export const publicLogsRowSchema = z.object({

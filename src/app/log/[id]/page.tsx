@@ -67,9 +67,7 @@ function getEnergyLabel(energy: number) {
 export default function LogDetailView() {
   const { id } = useParams();
   const supabase = createClient();
-  const [log, setLog] = useState<z.infer<typeof publicLogsRowSchema> | null>(
-    null
-  );
+  const [log, setLog] = useState<z.infer<typeof publicLogsRowSchema> | null>(null);
 
   useEffect(() => {
     const fetchLog = async () => {
@@ -124,9 +122,7 @@ export default function LogDetailView() {
                     <Calendar className="h-6 w-6 text-[#6B8EFF]" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-[#2D3748]">
-                      {formattedDate}
-                    </h1>
+                    <h1 className="text-2xl font-bold text-[#2D3748]">{formattedDate}</h1>
                     <div className="flex items-center space-x-2 text-[#2D3748]/60">
                       <Clock className="h-4 w-4" />
                       <span>Logged at {formattedTime}</span>
@@ -141,15 +137,11 @@ export default function LogDetailView() {
               <CardHeader>
                 <div className="flex items-center space-x-2">
                   <FileText className="h-5 w-5 text-[#6B8EFF]" />
-                  <h2 className="text-xl font-semibold text-[#2D3748]">
-                    Notes
-                  </h2>
+                  <h2 className="text-xl font-semibold text-[#2D3748]">Notes</h2>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-[#2D3748]/80 leading-relaxed text-lg">
-                  {log.notes}
-                </p>
+                <p className="text-[#2D3748]/80 leading-relaxed text-lg">{log.notes}</p>
               </CardContent>
             </Card>
 
@@ -158,9 +150,7 @@ export default function LogDetailView() {
               <CardHeader>
                 <div className="flex items-center space-x-2">
                   <FileText className="h-5 w-5 text-[#6B8EFF]" />
-                  <h2 className="text-xl font-semibold text-[#2D3748]">
-                    AI Summary
-                  </h2>
+                  <h2 className="text-xl font-semibold text-[#2D3748]">AI Summary</h2>
                 </div>
               </CardHeader>
               <CardContent>
@@ -176,9 +166,7 @@ export default function LogDetailView() {
                 <CardHeader>
                   <div className="flex items-center space-x-2">
                     <Tag className="h-5 w-5 text-[#6B8EFF]" />
-                    <h2 className="text-xl font-semibold text-[#2D3748]">
-                      Tags
-                    </h2>
+                    <h2 className="text-xl font-semibold text-[#2D3748]">Tags</h2>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -238,9 +226,7 @@ export default function LogDetailView() {
               <CardHeader>
                 <div className="flex items-center space-x-2">
                   <Zap className="h-5 w-5 text-[#FFB6C1]" />
-                  <h2 className="text-xl font-semibold text-[#2D3748]">
-                    Energy
-                  </h2>
+                  <h2 className="text-xl font-semibold text-[#2D3748]">Energy</h2>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -269,9 +255,7 @@ export default function LogDetailView() {
             {/* Quick Stats Card */}
             <Card className="bg-gradient-to-br from-[#6B8EFF]/10 to-[#A0D8FF]/10 border-[#6B8EFF]/20">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-[#2D3748] mb-4">
-                  Quick Summary
-                </h3>
+                <h3 className="font-semibold text-[#2D3748] mb-4">Quick Summary</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-[#2D3748]/70">Overall Score</span>

@@ -34,9 +34,7 @@ export function LogEntryForm() {
     const energyNum = Number.parseInt(energy);
 
     if (!mood || !energy) {
-      toast.error(
-        "Missing fields: Please fill in both mood and energy levels."
-      );
+      toast.error("Missing fields: Please fill in both mood and energy levels.");
       return;
     }
 
@@ -93,9 +91,7 @@ export function LogEntryForm() {
           <Plus className="h-5 w-5 text-[#6B8EFF]" />
           <span>Log Today&apos;s Entry</span>
         </CardTitle>
-        <CardDescription>
-          Track your mood and energy levels for today
-        </CardDescription>
+        <CardDescription>Track your mood and energy levels for today</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

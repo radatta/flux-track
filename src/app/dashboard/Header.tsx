@@ -76,9 +76,7 @@ export function HeaderSection({
               <div>
                 <p className="text-sm text-[#2D3748]/60">Average Mood</p>
                 <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold text-[#2D3748]">
-                    {averageMood}
-                  </p>
+                  <p className="text-2xl font-bold text-[#2D3748]">{averageMood}</p>
                   <Badge
                     variant="secondary"
                     className="bg-[#A0D8FF]/20 text-[#6B8EFF] hover:bg-[#A0D8FF]/30"
@@ -100,9 +98,7 @@ export function HeaderSection({
               <div>
                 <p className="text-sm text-[#2D3748]/60">Average Energy</p>
                 <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold text-[#2D3748]">
-                    {averageEnergy}
-                  </p>
+                  <p className="text-2xl font-bold text-[#2D3748]">{averageEnergy}</p>
                   <Badge
                     variant="secondary"
                     className="bg-[#FFB6C1]/20 text-[#FFB6C1] hover:bg-[#FFB6C1]/30"

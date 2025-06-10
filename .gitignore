@@ -40,3 +40,5 @@ next-env.d.ts
 .cursor/
 
 supabase/.temp/
+
+.vscode/settings.json

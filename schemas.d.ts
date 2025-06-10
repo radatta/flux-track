@@ -16,21 +16,15 @@ export type PublicBinaryQuantizeArgs = z.infer<
 export type PublicBinaryQuantizeReturns = z.infer<
   typeof generated.publicBinaryQuantizeReturnsSchema
 >;
-export type PublicHalfvecAvgArgs = z.infer<
-  typeof generated.publicHalfvecAvgArgsSchema
->;
+export type PublicHalfvecAvgArgs = z.infer<typeof generated.publicHalfvecAvgArgsSchema>;
 export type PublicHalfvecAvgReturns = z.infer<
   typeof generated.publicHalfvecAvgReturnsSchema
 >;
-export type PublicHalfvecOutArgs = z.infer<
-  typeof generated.publicHalfvecOutArgsSchema
->;
+export type PublicHalfvecOutArgs = z.infer<typeof generated.publicHalfvecOutArgsSchema>;
 export type PublicHalfvecOutReturns = z.infer<
   typeof generated.publicHalfvecOutReturnsSchema
 >;
-export type PublicHalfvecSendArgs = z.infer<
-  typeof generated.publicHalfvecSendArgsSchema
->;
+export type PublicHalfvecSendArgs = z.infer<typeof generated.publicHalfvecSendArgsSchema>;
 export type PublicHalfvecSendReturns = z.infer<
   typeof generated.publicHalfvecSendReturnsSchema
 >;
@@ -58,9 +52,7 @@ export type PublicHnswSparsevecSupportArgs = z.infer<
 export type PublicHnswSparsevecSupportReturns = z.infer<
   typeof generated.publicHnswSparsevecSupportReturnsSchema
 >;
-export type PublicHnswhandlerArgs = z.infer<
-  typeof generated.publicHnswhandlerArgsSchema
->;
+export type PublicHnswhandlerArgs = z.infer<typeof generated.publicHnswhandlerArgsSchema>;
 export type PublicHnswhandlerReturns = z.infer<
   typeof generated.publicHnswhandlerReturnsSchema
 >;
@@ -83,12 +75,8 @@ export type PublicIvfflathandlerReturns = z.infer<
   typeof generated.publicIvfflathandlerReturnsSchema
 >;
 export type PublicL2NormArgs = z.infer<typeof generated.publicL2NormArgsSchema>;
-export type PublicL2NormReturns = z.infer<
-  typeof generated.publicL2NormReturnsSchema
->;
-export type PublicL2NormalizeArgs = z.infer<
-  typeof generated.publicL2NormalizeArgsSchema
->;
+export type PublicL2NormReturns = z.infer<typeof generated.publicL2NormReturnsSchema>;
+export type PublicL2NormalizeArgs = z.infer<typeof generated.publicL2NormalizeArgsSchema>;
 export type PublicL2NormalizeReturns = z.infer<
   typeof generated.publicL2NormalizeReturnsSchema
 >;
@@ -110,33 +98,23 @@ export type PublicSparsevecTypmodInArgs = z.infer<
 export type PublicSparsevecTypmodInReturns = z.infer<
   typeof generated.publicSparsevecTypmodInReturnsSchema
 >;
-export type PublicVectorAvgArgs = z.infer<
-  typeof generated.publicVectorAvgArgsSchema
->;
+export type PublicVectorAvgArgs = z.infer<typeof generated.publicVectorAvgArgsSchema>;
 export type PublicVectorAvgReturns = z.infer<
   typeof generated.publicVectorAvgReturnsSchema
 >;
-export type PublicVectorDimsArgs = z.infer<
-  typeof generated.publicVectorDimsArgsSchema
->;
+export type PublicVectorDimsArgs = z.infer<typeof generated.publicVectorDimsArgsSchema>;
 export type PublicVectorDimsReturns = z.infer<
   typeof generated.publicVectorDimsReturnsSchema
 >;
-export type PublicVectorNormArgs = z.infer<
-  typeof generated.publicVectorNormArgsSchema
->;
+export type PublicVectorNormArgs = z.infer<typeof generated.publicVectorNormArgsSchema>;
 export type PublicVectorNormReturns = z.infer<
   typeof generated.publicVectorNormReturnsSchema
 >;
-export type PublicVectorOutArgs = z.infer<
-  typeof generated.publicVectorOutArgsSchema
->;
+export type PublicVectorOutArgs = z.infer<typeof generated.publicVectorOutArgsSchema>;
 export type PublicVectorOutReturns = z.infer<
   typeof generated.publicVectorOutReturnsSchema
 >;
-export type PublicVectorSendArgs = z.infer<
-  typeof generated.publicVectorSendArgsSchema
->;
+export type PublicVectorSendArgs = z.infer<typeof generated.publicVectorSendArgsSchema>;
 export type PublicVectorSendReturns = z.infer<
   typeof generated.publicVectorSendReturnsSchema
 >;

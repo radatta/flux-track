@@ -1,13 +1,7 @@
 import type React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  BarChart2,
-  Brain,
-  LineChart,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, BarChart2, Brain, LineChart, Sparkles } from "lucide-react";
 import OneTapComponent from "@/components/OneTapComponent";
 
 export default function LandingPage() {
@@ -20,8 +14,8 @@ export default function LandingPage() {
             Track your mood. Discover your patterns.
           </h1>
           <p className="text-lg md:text-xl mb-8 text-[#2D3748]/80">
-            FluxTrack helps you understand your emotional patterns with
-            AI-powered insights and beautiful visualizations.
+            FluxTrack helps you understand your emotional patterns with AI-powered
+            insights and beautiful visualizations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -91,8 +85,8 @@ export default function LandingPage() {
             Start your journey today
           </h2>
           <p className="text-lg mb-8">
-            Join thousands of others who are discovering insights about their
-            emotional wellbeing.
+            Join thousands of others who are discovering insights about their emotional
+            wellbeing.
           </p>
           <Button
             asChild
@@ -112,22 +106,13 @@ export default function LandingPage() {
             © 2023 FluxTrack. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link
-              href="/terms"
-              className="text-[#2D3748]/60 hover:text-[#6B8EFF]"
-            >
+            <Link href="/terms" className="text-[#2D3748]/60 hover:text-[#6B8EFF]">
               Terms
             </Link>
-            <Link
-              href="/privacy"
-              className="text-[#2D3748]/60 hover:text-[#6B8EFF]"
-            >
+            <Link href="/privacy" className="text-[#2D3748]/60 hover:text-[#6B8EFF]">
               Privacy
             </Link>
-            <Link
-              href="/contact"
-              className="text-[#2D3748]/60 hover:text-[#6B8EFF]"
-            >
+            <Link href="/contact" className="text-[#2D3748]/60 hover:text-[#6B8EFF]">
               Contact
             </Link>
           </div>

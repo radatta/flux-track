@@ -54,9 +54,7 @@ export function RecentEntriesTable({ entries }: { entries: Entry[] }) {
       <Card className="bg-white border-[#6B8EFF]/20">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <FileText className="h-12 w-12 text-[#6B8EFF]/50 mb-4" />
-          <h3 className="text-lg font-semibold text-[#2D3748] mb-2">
-            No entries yet
-          </h3>
+          <h3 className="text-lg font-semibold text-[#2D3748] mb-2">No entries yet</h3>
           <p className="text-[#2D3748]/60 text-center">
             Start logging your mood and energy to see your patterns here.
           </p>
@@ -112,10 +110,7 @@ export function RecentEntriesTable({ entries }: { entries: Entry[] }) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      <Progress
-                        value={entry.energy * 10}
-                        className="w-16 h-2"
-                      />
+                      <Progress value={entry.energy * 10} className="w-16 h-2" />
                       <span className="text-sm font-medium text-[#2D3748]">
                         {entry.energy}
                       </span>
