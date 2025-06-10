@@ -1,6 +1,5 @@
 -- Enable pgvector extension
 create extension if not exists vector with schema public;
-
 create table logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users not null,
@@ -15,7 +14,6 @@ create table logs (
   embedding vector(1536),
   constraint fk_user foreign key(user_id) references auth.users(id) on delete cascade
 );
-
 -- Indexes
 create index idx_logs_user_id on logs(user_id);
 create index idx_logs_created_at on logs(created_at);
