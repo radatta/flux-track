@@ -92,7 +92,7 @@ export default function LandingPage() {
             asChild
             className="bg-[#6B8EFF] hover:bg-[#6B8EFF]/90 text-white px-8 py-6 rounded-lg text-lg"
           >
-            <Link href="/signup">
+            <Link href="/auth/signup">
               Create your account <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
@@ -103,7 +103,7 @@ export default function LandingPage() {
       <footer className="container mx-auto px-4 py-8 border-t border-[#6B8EFF]/10">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-[#2D3748]/60 mb-4 md:mb-0">
-            © 2023 FluxTrack. All rights reserved.
+            © 2025 FluxTrack. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link href="/terms" className="text-[#2D3748]/60 hover:text-[#6B8EFF]">
