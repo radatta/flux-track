@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { Clock, FileText } from "lucide-react";
 import { Entry } from "@/lib/db";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 function getMoodColor(mood: number) {
   if (mood >= 8) return "bg-green-500";
@@ -85,48 +86,72 @@ export function RecentEntriesTable({ entries }: { entries: Entry[] }) {
             </TableHeader>
             <TableBody>
               {entries.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell className="font-medium">
-                    <Link href={`/log/${entry.id}`}>
-                      {new Date(entry.created_at).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Badge
-                        className={`${getMoodColor(
-                          entry.mood
-                        )} text-white hover:${getMoodColor(entry.mood)}/90`}
-                      >
-                        {entry.mood}
-                      </Badge>
-                      <span className="text-sm text-[#2D3748]/60">
-                        {getMoodLabel(entry.mood)}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Progress value={entry.energy * 10} className="w-16 h-2" />
-                      <span className="text-sm font-medium text-[#2D3748]">
-                        {entry.energy}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-xs">
-                    <span className="text-sm text-[#2D3748]/70">
-                      {truncateNotes(entry.ai_summary)}
-                    </span>
-                  </TableCell>
-                </TableRow>
+                <EntryRow key={entry.id} entry={entry} />
               ))}
             </TableBody>
           </Table>
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+interface EntryRowProps {
+  entry: Entry;
+}
+
+function EntryRow({ entry }: EntryRowProps) {
+  const [progressValue, setProgressValue] = useState(0);
+
+  useEffect(() => {
+    if (entry.ai_summary) return;
+    const id = setInterval(() => {
+      setProgressValue((prev) => {
+        const next = prev >= 100 ? 100 : prev + 3;
+        if (next === 100) clearInterval(id);
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [entry.ai_summary]);
+
+  return (
+    <TableRow key={entry.id}>
+      <TableCell className="font-medium">
+        <Link href={`/log/${entry.id}`}>
+          {new Date(entry.created_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+        </Link>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center space-x-2">
+          <Badge
+            className={`${getMoodColor(
+              entry.mood
+            )} text-white hover:${getMoodColor(entry.mood)}/90`}
+          >
+            {entry.mood}
+          </Badge>
+          <span className="text-sm text-[#2D3748]/60">{getMoodLabel(entry.mood)}</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center space-x-2">
+          <Progress value={entry.energy * 10} className="w-16 h-2" />
+          <span className="text-sm font-medium text-[#2D3748]">{entry.energy}</span>
+        </div>
+      </TableCell>
+      <TableCell className="max-w-xs">
+        <span className="text-sm text-[#2D3748]/70">
+          {entry.ai_summary ? (
+            truncateNotes(entry.ai_summary)
+          ) : (
+            <Progress value={progressValue} className="w-full" />
+          )}
+        </span>
+      </TableCell>
+    </TableRow>
   );
 }
