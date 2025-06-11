@@ -56,14 +56,7 @@ export default function PoseCanvas({
         const poses = await detector.estimatePoses(video);
         if (poses.length > 0) {
           const keypoints = poses[0].keypoints as poseDetection.Keypoint[];
-          drawKeypointsWithCoords(
-            ctx,
-            keypoints,
-            scaleX,
-            scaleY,
-            KEYPOINT_CONNECTIONS,
-            SCORE_THRESHOLD
-          );
+          drawKeypointsWithCoords(ctx, keypoints, scaleX, scaleY, SCORE_THRESHOLD);
         }
         animationFrameId = requestAnimationFrame(render);
       }

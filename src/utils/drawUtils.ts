@@ -5,7 +5,6 @@ export function drawKeypointsWithCoords(
     keypoints: Keypoint[],
     scaleX: number,
     scaleY: number,
-    KEYPOINT_CONNECTIONS: [string, string, string][],
     SCORE_THRESHOLD: number
 ) {
     ctx.font = "16px monospace";
@@ -51,8 +50,20 @@ export function drawKeypointsWithCoords(
             }
         }
     });
+}
 
+export function drawKeypointConnections(
+    ctx: CanvasRenderingContext2D,
+    keypoints: Keypoint[],
+    scaleX: number,
+    scaleY: number,
+    KEYPOINT_CONNECTIONS: [string, string, string][],
+    SCORE_THRESHOLD: number
+) {
     // Draw lines for connections
+    ctx.font = "16px monospace";
+    ctx.textBaseline = "top";
+
     ctx.strokeStyle = "blue";
     ctx.lineWidth = 3;
     KEYPOINT_CONNECTIONS.forEach(([a, b, axis]) => {
@@ -92,4 +103,4 @@ export function drawKeypointsWithCoords(
             ctx.restore();
         }
     });
-} 
+}

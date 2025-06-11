@@ -4,19 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-webgl";
 import * as poseDetection from "@tensorflow-models/pose-detection";
-import { drawKeypointsWithCoords } from "@/utils/drawUtils";
-
-const KEYPOINT_CONNECTIONS: [string, string, string][] = [
-  ["right_shoulder", "right_ear", ""],
-  ["left_shoulder", "left_ear", ""],
-  ["left_shoulder", "right_shoulder", "y"],
-  ["left_ear", "right_ear", "y"],
-];
+import { drawKeypointConnections, drawKeypointsWithCoords } from "@/utils/drawUtils";
+import { exerciseConfigs } from "@/utils/exerciseConfig";
+import type { NamedKeypoints } from "@/utils/exerciseConfig";
 
 const SCORE_THRESHOLD = 0.3;
-const TILT_THRESHOLD = 20;
 const HOLD_TARGET_MS = 10000;
-const DRAW_KEYPOINTS = true;
+const DRAW_KEYPOINTS = false;
+const DRAW_KEYPOINT_CONNECTIONS = true;
 
 export function Exercise({ exercise }: { exercise: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -27,6 +22,9 @@ export function Exercise({ exercise }: { exercise: string }) {
   const [repCount, setRepCount] = useState<number>(0);
 
   useEffect(() => {
+    // Resolve configuration for the requested exercise (fallback to head_tilt_right)
+    const config = exerciseConfigs[exercise] ?? exerciseConfigs["head_tilt_right"];
+
     let detector: poseDetection.PoseDetector | null = null;
     let intervalId: ReturnType<typeof setInterval> | null = null;
     let animationFrameId: number | null = null;
@@ -63,18 +61,23 @@ export function Exercise({ exercise }: { exercise: string }) {
         const poses = await detector.estimatePoses(video);
 
         // Draw keypoints and connections with coordinates using utility
-        if (poses.length > 0 && DRAW_KEYPOINTS) {
+        if (poses.length > 0 && (DRAW_KEYPOINTS || DRAW_KEYPOINT_CONNECTIONS)) {
           const keypoints = poses[0].keypoints as poseDetection.Keypoint[];
           const scaleX = (canvas.width ?? 1) / video.videoWidth || 1;
           const scaleY = (canvas.height ?? 1) / video.videoHeight || 1;
-          drawKeypointsWithCoords(
-            ctx,
-            keypoints,
-            scaleX,
-            scaleY,
-            KEYPOINT_CONNECTIONS,
-            SCORE_THRESHOLD
-          );
+          if (DRAW_KEYPOINTS) {
+            drawKeypointsWithCoords(ctx, keypoints, scaleX, scaleY, SCORE_THRESHOLD);
+          }
+          if (DRAW_KEYPOINT_CONNECTIONS) {
+            drawKeypointConnections(
+              ctx,
+              keypoints,
+              scaleX,
+              scaleY,
+              config.keypointConnections,
+              SCORE_THRESHOLD
+            );
+          }
         }
 
         animationFrameId = requestAnimationFrame(render);
@@ -82,64 +85,70 @@ export function Exercise({ exercise }: { exercise: string }) {
 
       // 4. Run pose estimation loop and hold detection
       intervalId = setInterval(async () => {
+        if (!config) return; // Safety (although config is always defined above)
         if (!detector || !video) return;
         const poses = await detector.estimatePoses(video);
         if (poses.length > 0) {
           const keypoints = poses[0].keypoints;
-          const rightEar = keypoints.find((kp) => kp.name === "right_ear");
-          const leftEar = keypoints.find((kp) => kp.name === "left_ear");
-          const rightSh = keypoints.find((kp) => kp.name === "right_shoulder");
-          const leftSh = keypoints.find((kp) => kp.name === "left_shoulder");
 
-          if (
-            rightEar &&
-            leftEar &&
-            rightSh &&
-            leftSh &&
-            (rightEar.score ?? 0) > SCORE_THRESHOLD &&
-            (leftEar.score ?? 0) > SCORE_THRESHOLD &&
-            (rightSh.score ?? 0) > SCORE_THRESHOLD &&
-            (leftSh.score ?? 0) > SCORE_THRESHOLD
-          ) {
-            const earYDiff = rightEar.y - leftEar.y;
-            const shoulderYDiff = Math.abs(leftSh.y - rightSh.y);
-            // Step 1: Detect head tilt right and check shoulder alignment
-            if (earYDiff > TILT_THRESHOLD) {
-              if (shoulderYDiff > 30) {
+          // Convert keypoints array to a name -> keypoint map for easier access
+          const kpMap: NamedKeypoints = {};
+          keypoints.forEach((kp) => {
+            if (kp.name) kpMap[kp.name] = kp as poseDetection.Keypoint;
+          });
+
+          // Helper to ensure required keypoints are visible and confident
+          const requiredPresent = config.requiredKeypoints.every(
+            (name) => (kpMap[name]?.score ?? 0) > SCORE_THRESHOLD
+          );
+
+          if (requiredPresent) {
+            // Step 1: Primary pose validation
+            if (config.primaryCheck(kpMap)) {
+              // Run secondary invalidation checks (if any)
+              const failingSecondary = config.secondaryChecks?.find((sc) =>
+                sc.invalidCheck(kpMap)
+              );
+
+              if (failingSecondary) {
+                // Secondary check failed – prompt user and reset pose state
                 inPose = false;
                 poseStartTime = null;
                 setHoldTime(0);
-                setFeedback("⬆️ Keep your shoulders level");
+                setFeedback(failingSecondary.message);
               } else {
+                // User is correctly in pose – handle hold logic
                 if (!inPose) {
                   inPose = true;
                   poseStartTime = new Date();
                 }
+
                 if (poseStartTime) {
                   const elapsed = new Date().getTime() - poseStartTime.getTime();
                   setHoldTime(Math.floor(elapsed / 1000));
-                  // Step 2: Hold for 10 seconds
+
                   if (elapsed >= HOLD_TARGET_MS) {
-                    setFeedback("✅ Good rep! Head tilt right held for 10s.");
+                    // Rep complete
+                    setFeedback(config.messages.success);
                     setRepCount((prev) => prev + 1);
                     inPose = false;
                     poseStartTime = null;
                     setHoldTime(0);
                   } else {
-                    setFeedback(
-                      `👉 Hold head tilt right: ${10 - Math.floor(elapsed / 1000)}s left`
-                    );
+                    const secondsRemaining = 10 - Math.floor(elapsed / 1000);
+                    setFeedback(config.messages.holdPrompt(secondsRemaining));
                   }
                 }
               }
             } else {
-              // Step 3: Reset if user exits pose
+              // Step 3: Not in primary pose – reset
               inPose = false;
               poseStartTime = null;
               setHoldTime(0);
-              setFeedback("⬆️ Move into head tilt right position");
+              setFeedback(config.messages.initialPrompt);
             }
           } else {
+            // Required keypoints not visible/confident
             inPose = false;
             poseStartTime = null;
             setHoldTime(0);
@@ -166,7 +175,7 @@ export function Exercise({ exercise }: { exercise: string }) {
         (video.srcObject as MediaStream).getTracks().forEach((track) => track.stop());
       }
     };
-  }, []);
+  }, [exercise]);
 
   return (
     <div className="flex flex-col items-center mt-8">
@@ -193,8 +202,9 @@ export function Exercise({ exercise }: { exercise: string }) {
         />
       </div>
       <p className="mb-2">
-        <strong>Instructions:</strong> Tilt your head right (left ear lower than right
-        ear) and hold for 10 seconds. Repeat as many reps as you like.
+        <strong>Instructions:</strong>{" "}
+        {exerciseConfigs[exercise]?.instructions ??
+          exerciseConfigs["head_tilt_right"].instructions}
       </p>
       <div
         className="text-lg font-semibold p-2 rounded"
