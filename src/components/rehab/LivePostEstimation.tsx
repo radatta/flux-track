@@ -1,27 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PoseHeader from "./PoseHeader";
 import PoseVideoFeed from "./PoseVideoFeed";
 import PoseSidebar from "./PoseSidebar";
 import type { PoseData } from "./poseTypes";
+import { useSearchParams } from "next/navigation";
 
-export function LivePoseEstimation({
-  initialExercise = "head_tilt_right",
-}: {
-  initialExercise?: string;
-}) {
-  const [currentExercise, setCurrentExercise] = useState<string>(
-    initialExercise.replace(/_/g, "-")
-  );
+export function LivePoseEstimation() {
+  const searchParams = useSearchParams();
+  const exercise = searchParams.get("exercise") || "head-tilt-right";
+  const [currentExercise, setCurrentExercise] = useState<string>(exercise);
   const [poseData, setPoseData] = useState<PoseData>({
     isCorrect: false,
     feedback: "Position yourself in front of the camera",
     confidence: 0,
+    accuracy: 0,
     holdTime: 0,
     repCount: 0,
   });
   const [sessionTime, setSessionTime] = useState<number>(0);
+
+  const [exercises, setExercises] = useState<{ slug: string; name: string }[]>([]);
+
+  // Fetch exercises list
+  useEffect(() => {
+    const fetchExercises = async () => {
+      try {
+        const res = await fetch("/api/rehab/exercise");
+        if (!res.ok) throw new Error("Failed to load exercises");
+        const data = (await res.json()) as { slug: string; name: string }[];
+        setExercises(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchExercises();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F8F9FF] p-4 md:p-6">
@@ -30,6 +45,7 @@ export function LivePoseEstimation({
         <PoseHeader
           currentExercise={currentExercise}
           onExerciseChange={setCurrentExercise}
+          exercises={exercises}
         />
 
         {/* Main Grid */}

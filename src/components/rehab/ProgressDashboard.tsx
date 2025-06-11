@@ -35,107 +35,31 @@ import {
   Flame,
   BarChart3,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
-// Mock data for charts and progress
-const weeklyProgressData = [
-  { day: "Mon", sessions: 2, duration: 25, accuracy: 85 },
-  { day: "Tue", sessions: 1, duration: 15, accuracy: 78 },
-  { day: "Wed", sessions: 3, duration: 35, accuracy: 92 },
-  { day: "Thu", sessions: 2, duration: 20, accuracy: 88 },
-  { day: "Fri", sessions: 1, duration: 12, accuracy: 75 },
-  { day: "Sat", sessions: 4, duration: 45, accuracy: 95 },
-  { day: "Sun", sessions: 2, duration: 30, accuracy: 90 },
-];
-
-const monthlyData = [
-  { month: "Jan", totalSessions: 45, avgAccuracy: 82 },
-  { month: "Feb", totalSessions: 52, avgAccuracy: 85 },
-  { month: "Mar", totalSessions: 48, avgAccuracy: 88 },
-  { month: "Apr", totalSessions: 61, avgAccuracy: 91 },
-  { month: "May", totalSessions: 58, avgAccuracy: 89 },
-  { month: "Jun", totalSessions: 65, avgAccuracy: 93 },
-];
-
-const recentSessions = [
-  {
-    id: 1,
-    date: "2024-01-08",
-    exercise: "Chin Tuck",
-    duration: "15 min",
-    reps: 12,
-    accuracy: 92,
-    feedback: "Excellent form",
-  },
-  {
-    id: 2,
-    date: "2024-01-08",
-    exercise: "Head Tilt Right",
-    duration: "10 min",
-    reps: 8,
-    accuracy: 88,
-    feedback: "Good progress",
-  },
-  {
-    id: 3,
-    date: "2024-01-07",
-    exercise: "Neck Rotation",
-    duration: "20 min",
-    reps: 15,
-    accuracy: 85,
-    feedback: "Keep practicing",
-  },
-  {
-    id: 4,
-    date: "2024-01-07",
-    exercise: "Chin Tuck",
-    duration: "12 min",
-    reps: 10,
-    accuracy: 78,
-    feedback: "Focus on form",
-  },
-  {
-    id: 5,
-    date: "2024-01-06",
-    exercise: "Shoulder Rolls",
-    duration: "8 min",
-    reps: 6,
-    accuracy: 95,
-    feedback: "Perfect execution",
-  },
-];
-
-const achievements = [
-  {
-    title: "7-Day Streak",
-    description: "Completed exercises for 7 consecutive days",
-    earned: true,
-    date: "2024-01-08",
-  },
-  {
-    title: "Perfect Form",
-    description: "Achieved 95%+ accuracy in a session",
-    earned: true,
-    date: "2024-01-06",
-  },
-  {
-    title: "Consistency Champion",
-    description: "30 sessions completed",
-    earned: true,
-    date: "2024-01-05",
-  },
-  {
-    title: "Early Bird",
-    description: "Complete 5 morning sessions",
-    earned: false,
-    progress: 3,
-  },
-  {
-    title: "Marathon",
-    description: "60-minute total session time in one day",
-    earned: false,
-    progress: 45,
-  },
-];
+type WeeklyProgress = {
+  day: string;
+  sessions: number;
+  duration: number;
+  accuracy: number;
+};
+type MonthlyData = { month: string; totalSessions: number; avgAccuracy: number };
+type RecentSession = {
+  id: string;
+  date: string;
+  exercise: string;
+  duration: string;
+  reps: number;
+  accuracy: number;
+  feedback: string;
+};
+type Achievement = {
+  title: string;
+  description: string;
+  earned: boolean;
+  date?: string;
+  progress?: number;
+};
 
 const chartConfig = {
   sessions: {
@@ -153,10 +77,42 @@ const chartConfig = {
 };
 
 export function ProgressDashboard() {
-  const currentStreak = 7;
-  const totalSessions = 156;
-  const avgAccuracy = 89;
-  const totalDuration = 2340; // minutes
+  const [loading, setLoading] = useState(true);
+  const [weeklyProgressData, setWeeklyProgressData] = useState<WeeklyProgress[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [totalSessions, setTotalSessions] = useState(0);
+  const [avgAccuracy, setAvgAccuracy] = useState(0);
+  const [totalDuration, setTotalDuration] = useState(0);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await fetch("/api/rehab/dashboard");
+        if (!res.ok) throw new Error("Failed to load dashboard");
+        const data = await res.json();
+        setWeeklyProgressData(data.weeklyProgressData);
+        setMonthlyData(data.monthlyData);
+        setRecentSessions(data.recentSessions);
+        setAchievements(data.achievements);
+        setCurrentStreak(data.currentStreak);
+        setTotalSessions(data.totalSessions);
+        setAvgAccuracy(data.avgAccuracy);
+        setTotalDuration(data.totalDuration);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  if (loading) {
+    return <div className="text-center py-20">Loading...</div>;
+  }
 
   const getAccuracyColor = (accuracy: number) => {
     if (accuracy >= 90) return "text-green-600";
@@ -391,15 +347,19 @@ export function ProgressDashboard() {
                       Earned {new Date(achievement.date!).toLocaleDateString()}
                     </p>
                   ) : (
-                    <div className="space-y-1">
-                      <Progress
-                        value={(achievement.progress! / 5) * 100}
-                        className="h-1"
-                      />
-                      <p className="text-xs text-[#2D3748]/50">
-                        {achievement.progress}/5 progress
-                      </p>
-                    </div>
+                    <>
+                      {achievement.progress !== undefined && (
+                        <>
+                          <Progress
+                            value={(achievement.progress / 5) * 100}
+                            className="h-1"
+                          />
+                          <p className="text-xs text-[#2D3748]/50">
+                            {achievement.progress}/5 progress
+                          </p>
+                        </>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

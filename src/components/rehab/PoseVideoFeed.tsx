@@ -25,23 +25,48 @@ const HOLD_TARGET_MS = 10000;
 const DRAW_KEYPOINTS = false;
 const DRAW_KEYPOINT_CONNECTIONS = true;
 
+const defaultPoseData: PoseData = {
+  isCorrect: false,
+  feedback: "Position yourself in front of the camera",
+  confidence: 0,
+  accuracy: 0,
+  holdTime: 0,
+  repCount: 0,
+};
+
 export default function PoseVideoFeed({
   currentExercise,
   onPoseDataChange,
   onSessionTimeChange,
 }: PoseVideoFeedProps) {
   const [isActive, setIsActive] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [poseData, setPoseData] = useState<PoseData>({
-    isCorrect: false,
-    feedback: "Position yourself in front of the camera",
-    confidence: 0,
-    holdTime: 0,
-    repCount: 0,
+    ...defaultPoseData,
   });
   const [sessionTime, setSessionTime] = useState(0);
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Log reps to server whenever repCount increases
+  const prevRepRef = useRef(0);
+  useEffect(() => {
+    if (!sessionId) return;
+    if (poseData.repCount > prevRepRef.current) {
+      // new rep detected
+      fetch("/api/rehab/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          repNumber: poseData.repCount,
+          durationSeconds: 10, // default
+        }),
+      }).catch((err) => console.error(err));
+      prevRepRef.current = poseData.repCount;
+    }
+  }, [poseData.repCount, sessionId]);
 
   // Propagate updates to parent whenever poseData or sessionTime changes
   useEffect(() => onPoseDataChange(poseData), [poseData]);
@@ -165,6 +190,7 @@ export default function PoseVideoFeed({
               isCorrect: false,
               feedback: failingSecondary.message,
               confidence,
+              accuracy: config.accuracyFunction(kpMap),
               holdTime: 0,
             }));
           } else {
@@ -183,6 +209,7 @@ export default function PoseVideoFeed({
                   isCorrect: true,
                   feedback: config.messages.success,
                   confidence,
+                  accuracy: config.accuracyFunction(kpMap),
                   holdTime: 0,
                   repCount: prev.repCount + 1,
                 }));
@@ -195,6 +222,7 @@ export default function PoseVideoFeed({
                   isCorrect: true,
                   feedback: config.messages.holdPrompt(secondsRemaining),
                   confidence,
+                  accuracy: config.accuracyFunction(kpMap),
                   holdTime: holdSeconds,
                 }));
               }
@@ -208,6 +236,7 @@ export default function PoseVideoFeed({
             isCorrect: false,
             feedback: config.messages.initialPrompt,
             confidence,
+            accuracy: config.accuracyFunction(kpMap),
             holdTime: 0,
           }));
         }
@@ -241,19 +270,43 @@ export default function PoseVideoFeed({
     if (!isActive && cameraPermission === null) {
       startCamera();
     }
+
+    // Starting session
+    if (!isActive) {
+      // Start new session on server
+      fetch("/api/rehab/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exerciseSlug: currentExercise }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setSessionId(data.id);
+          prevRepRef.current = 0;
+        })
+        .catch((err) => console.error(err));
+    } else if (sessionId) {
+      // Stopping session -> mark complete
+      fetch("/api/rehab/session/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      }).catch((err) => console.error(err));
+      setSessionId(null);
+      setSessionTime(0);
+      prevRepRef.current = 0;
+      setPoseData(defaultPoseData);
+    }
+
     setIsActive(!isActive);
   };
 
   const resetSession = () => {
+    setSessionId(null);
     setIsActive(false);
     setSessionTime(0);
-    setPoseData({
-      isCorrect: false,
-      feedback: "Position yourself in front of the camera",
-      confidence: 0,
-      holdTime: 0,
-      repCount: 0,
-    });
+    prevRepRef.current = 0;
+    setPoseData(defaultPoseData);
   };
 
   return (

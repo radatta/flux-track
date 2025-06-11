@@ -158,7 +158,13 @@ const ChartTooltipContent = React.forwardRef<
         return null;
       }
 
-      const formattedDate = format(new Date(label), "MMM d, yyyy");
+      let formattedDate: string;
+      const date = new Date(label);
+      if (!isNaN(date.getTime())) {
+        formattedDate = format(date, "MMM d, yyyy");
+      } else {
+        formattedDate = String(label); // fallback to label as-is
+      }
 
       return <div className={cn("font-medium", labelClassName)}>{formattedDate}</div>;
     }, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey]);

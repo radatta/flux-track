@@ -14,11 +14,13 @@ import Link from "next/link";
 interface PoseHeaderProps {
   currentExercise: string;
   onExerciseChange: (exercise: string) => void;
+  exercises: { slug: string; name: string }[];
 }
 
 export default function PoseHeader({
   currentExercise,
   onExerciseChange,
+  exercises,
 }: PoseHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-6">
@@ -34,10 +36,11 @@ export default function PoseHeader({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="chin-tuck">Chin Tuck</SelectItem>
-            <SelectItem value="head-tilt-right">Head Tilt Right</SelectItem>
-            <SelectItem value="head-tilt-left">Head Tilt Left</SelectItem>
-            <SelectItem value="neck-rotation">Neck Rotation</SelectItem>
+            {exercises.map((ex) => (
+              <SelectItem key={ex.slug} value={ex.slug}>
+                {ex.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Button asChild variant="outline" className="border-[#6B8EFF]/20">
