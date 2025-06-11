@@ -19,10 +19,12 @@ export interface ExerciseConfig {
     requiredKeypoints: string[];
     /** List of keypoints to draw connections between */
     keypointConnections: [string, string, string][];
-    /** Primary pose check – should return true when the user is in the desired pose */
+    /** Primary pose check - should return true when the user is in the desired pose */
     primaryCheck: (kps: NamedKeypoints) => boolean;
     /** Optional secondary checks that invalidate the pose if any return true */
     secondaryChecks?: SecondaryCheck[];
+    /** Accuracy function to calculate the accuracy of the pose */
+    accuracyFunction: (kps: NamedKeypoints) => number;
     /** Instruction text to render above the feedback panel */
     instructions: string;
     /** Feedback messages that can be customised per-exercise */
@@ -63,6 +65,13 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
                 message: "⬆️ Keep your shoulders level",
             },
         ],
+        accuracyFunction: (kps) => {
+            const tilt = Math.abs(kps["right_ear"].y - kps["left_ear"].y);
+            const shoulderLevel = Math.abs(kps["left_shoulder"].y - kps["right_shoulder"].y);
+            const tiltScore = Math.min(1, (tilt - 20) / 50);
+            const shoulderPenalty = Math.min(1, shoulderLevel / 30);
+            return Math.max(0, (tiltScore * 100) - (shoulderPenalty * 50));
+        },
         instructions:
             "Tilt your head right (left ear lower than right ear) and hold for 10 seconds. Repeat as many reps as you like.",
         messages: {
@@ -93,6 +102,13 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
                 message: "⬆️ Keep your shoulders level",
             },
         ],
+        accuracyFunction: (kps) => {
+            const tilt = Math.abs(kps["left_ear"].y - kps["right_ear"].y);
+            const shoulderLevel = Math.abs(kps["left_shoulder"].y - kps["right_shoulder"].y);
+            const tiltScore = Math.min(1, (tilt - 20) / 50);
+            const shoulderPenalty = Math.min(1, shoulderLevel / 30);
+            return Math.max(0, (tiltScore * 100) - (shoulderPenalty * 50));
+        },
         instructions:
             "Tilt your head left (right ear lower than left ear) and hold for 10 seconds. Repeat as many reps as you like.",
         messages: {

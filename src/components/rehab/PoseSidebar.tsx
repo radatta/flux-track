@@ -66,10 +66,18 @@ export default function PoseSidebar({ poseData, sessionTime }: PoseSidebarProps)
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Accuracy</span>
+              <span>Confidence</span>
               <span>{poseData.confidence.toFixed(1)}%</span>
             </div>
             <Progress value={poseData.confidence} className="h-2" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Accuracy</span>
+              <span>{poseData.accuracy.toFixed(1)}%</span>
+            </div>
+            <Progress value={poseData.accuracy} className="h-2" />
           </div>
         </CardContent>
       </Card>
