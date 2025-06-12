@@ -41,6 +41,7 @@ export interface ExerciseConfig {
 // Threshold constants specific to certain exercises
 const TILT_THRESHOLD = 20;
 const SHOULDER_LEVEL_THRESHOLD = 30;
+const ROTATION_RATIO_THRESHOLD = 1.5;
 
 export const exerciseConfigs: Record<string, ExerciseConfig> = {
     // Default head-tilt-right exercise (matches the original implementation)
@@ -116,6 +117,130 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
             holdPrompt: (secondsRemaining) =>
                 `👉 Hold head tilt left: ${secondsRemaining}s left`,
             success: "✅ Good rep! Head tilt left held for 10s.",
+        },
+    },
+    /**
+     * Neck rotation to the right (looking towards your right shoulder)
+     * Slug suggestion: "neck-rotation-right" → becomes "neck_rotation_right" via toConfigKey()
+     */
+    neck_rotation_right: {
+        requiredKeypoints: [
+            "nose",
+            "right_ear",
+            "left_ear",
+            "left_shoulder",
+            "right_shoulder",
+        ],
+        keypointConnections: [
+            ["nose", "right_ear", "x"],
+            ["left_shoulder", "right_shoulder", "y"],
+        ],
+        primaryCheck: (kps) => {
+            const rightDist = Math.hypot(
+                kps["nose"].x - kps["right_ear"].x,
+                kps["nose"].y - kps["right_ear"].y
+            );
+            const leftDist = Math.hypot(
+                kps["nose"].x - kps["left_ear"].x,
+                kps["nose"].y - kps["left_ear"].y
+            );
+            return leftDist / rightDist > ROTATION_RATIO_THRESHOLD;
+        },
+        secondaryChecks: [
+            {
+                invalidCheck: (kps) =>
+                    Math.abs(
+                        kps["left_shoulder"].y - kps["right_shoulder"].y
+                    ) > SHOULDER_LEVEL_THRESHOLD,
+                message: "⬆️ Keep your shoulders level",
+            },
+        ],
+        accuracyFunction: (kps) => {
+            const rightDist = Math.hypot(
+                kps["nose"].x - kps["right_ear"].x,
+                kps["nose"].y - kps["right_ear"].y
+            );
+            const leftDist = Math.hypot(
+                kps["nose"].x - kps["left_ear"].x,
+                kps["nose"].y - kps["left_ear"].y
+            );
+            const ratio = leftDist / rightDist;
+            const rotationScore = Math.min(1, (ratio - 1) / (ROTATION_RATIO_THRESHOLD - 1));
+            const shoulderLevel = Math.abs(
+                kps["left_shoulder"].y - kps["right_shoulder"].y
+            );
+            const shoulderPenalty = Math.min(1, shoulderLevel / SHOULDER_LEVEL_THRESHOLD);
+            return Math.max(0, rotationScore * 100 - shoulderPenalty * 50);
+        },
+        instructions:
+            "Rotate your head to the right (look over your right shoulder) and hold for 10 seconds. Repeat as many reps as you like.",
+        messages: {
+            initialPrompt: "⬆️ Turn your head right",
+            holdPrompt: (secondsRemaining) =>
+                `👉 Hold head rotation right: ${secondsRemaining}s left`,
+            success: "✅ Good rep! Head rotation right held for 10s.",
+        },
+    },
+    /**
+     * Neck rotation to the left (looking towards your left shoulder)
+     * Slug suggestion: "neck-rotation-left" → becomes "neck_rotation_left" via toConfigKey()
+     */
+    neck_rotation_left: {
+        requiredKeypoints: [
+            "nose",
+            "right_ear",
+            "left_ear",
+            "left_shoulder",
+            "right_shoulder",
+        ],
+        keypointConnections: [
+            ["nose", "left_ear", "x"],
+            ["left_shoulder", "right_shoulder", "y"],
+        ],
+        primaryCheck: (kps) => {
+            const rightDist = Math.hypot(
+                kps["nose"].x - kps["right_ear"].x,
+                kps["nose"].y - kps["right_ear"].y
+            );
+            const leftDist = Math.hypot(
+                kps["nose"].x - kps["left_ear"].x,
+                kps["nose"].y - kps["left_ear"].y
+            );
+            return rightDist / leftDist > ROTATION_RATIO_THRESHOLD;
+        },
+        secondaryChecks: [
+            {
+                invalidCheck: (kps) =>
+                    Math.abs(
+                        kps["left_shoulder"].y - kps["right_shoulder"].y
+                    ) > SHOULDER_LEVEL_THRESHOLD,
+                message: "⬆️ Keep your shoulders level",
+            },
+        ],
+        accuracyFunction: (kps) => {
+            const rightDist = Math.hypot(
+                kps["nose"].x - kps["right_ear"].x,
+                kps["nose"].y - kps["right_ear"].y
+            );
+            const leftDist = Math.hypot(
+                kps["nose"].x - kps["left_ear"].x,
+                kps["nose"].y - kps["left_ear"].y
+            );
+            const ratio = rightDist / leftDist;
+            const rotationScore = Math.min(1, (ratio - 1) / (ROTATION_RATIO_THRESHOLD - 1));
+            const shoulderLevel = Math.abs(
+                kps["left_shoulder"].y - kps["right_shoulder"].y
+            );
+            const shoulderPenalty = Math.min(1, shoulderLevel / SHOULDER_LEVEL_THRESHOLD);
+            return Math.max(0, rotationScore * 100 - shoulderPenalty * 50);
+        },
+        instructions:
+            "Rotate your head to the left (look over your left shoulder) and hold for 10 seconds. Repeat as many reps as you like.",
+        messages: {
+            initialPrompt: "⬆️ Turn your head left",
+            holdPrompt: (secondsRemaining) =>
+                `👉 Hold head rotation left: ${secondsRemaining}s left`,
+            success: "✅ Good rep! Head rotation left held for 10s.",
         },
     },
 }; 
