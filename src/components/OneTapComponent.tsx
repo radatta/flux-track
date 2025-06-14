@@ -45,6 +45,7 @@ const OneTapComponent = () => {
           return;
         }
 
+        console.log("Initializing Google One Tap with nonce");
         window.google.accounts.id.initialize({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
           callback: async (response: CredentialResponse) => {
@@ -71,7 +72,21 @@ const OneTapComponent = () => {
           use_fedcm_for_prompt: true,
         });
 
+        console.log("Prompting Google One Tap");
         window.google.accounts.id.prompt(); // Display the One Tap UI
+
+        window.google.accounts.id.prompt((notification) => {
+          console.log("Notification: ", notification);
+          if (notification.isNotDisplayed()) {
+            console.log("One Tap not displayed:", notification.getNotDisplayedReason());
+          }
+          if (notification.isSkippedMoment()) {
+            console.log("One Tap skipped:", notification.getSkippedReason());
+          }
+          if (notification.isDismissedMoment()) {
+            console.log("One Tap dismissed:", notification.getDismissedReason());
+          }
+        });
       });
     };
     initializeGoogleOneTap();

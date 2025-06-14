@@ -42,6 +42,8 @@ export interface ExerciseConfig {
 const TILT_THRESHOLD = 20;
 const SHOULDER_LEVEL_THRESHOLD = 30;
 const ROTATION_RATIO_THRESHOLD = 1.5;
+// Threshold for neck flexion (chin toward chest) used in circumduction approximation
+const FLEXION_THRESHOLD = 40;
 
 export const exerciseConfigs: Record<string, ExerciseConfig> = {
     // Default head-tilt-right exercise (matches the original implementation)
@@ -241,6 +243,57 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
             holdPrompt: (secondsRemaining) =>
                 `👉 Hold head rotation left: ${secondsRemaining}s left`,
             success: "✅ Good rep! Head rotation left held for 10s.",
+        },
+    },
+    /**
+     * Neck circumduction (full circular motion). For simplicity we approximate by
+     * detecting a sustained neck flexion (chin to chest) for 10 s, which forms
+     * the lower part of the circular movement.
+     * Slug suggestion: "neck-circumduction" → becomes "neck_circumduction".
+     */
+    neck_circumduction: {
+        requiredKeypoints: [
+            "nose",
+            "left_ear",
+            "right_ear",
+            "left_shoulder",
+            "right_shoulder",
+        ],
+        keypointConnections: [
+            ["nose", "left_ear", "y"],
+            ["nose", "right_ear", "y"],
+            ["left_shoulder", "right_shoulder", "y"],
+        ],
+        primaryCheck: (kps) => {
+            const avgEarY = (kps["left_ear"].y + kps["right_ear"].y) / 2;
+            return kps["nose"].y - avgEarY > FLEXION_THRESHOLD;
+        },
+        secondaryChecks: [
+            {
+                invalidCheck: (kps) =>
+                    Math.abs(
+                        kps["left_shoulder"].y - kps["right_shoulder"].y
+                    ) > SHOULDER_LEVEL_THRESHOLD,
+                message: "⬆️ Keep your shoulders level",
+            },
+        ],
+        accuracyFunction: (kps) => {
+            const avgEarY = (kps["left_ear"].y + kps["right_ear"].y) / 2;
+            const flexion = kps["nose"].y - avgEarY; // how far nose is below ears
+            const flexionScore = Math.min(1, (flexion - FLEXION_THRESHOLD) / 50);
+            const shoulderLevel = Math.abs(
+                kps["left_shoulder"].y - kps["right_shoulder"].y
+            );
+            const shoulderPenalty = Math.min(1, shoulderLevel / SHOULDER_LEVEL_THRESHOLD);
+            return Math.max(0, flexionScore * 100 - shoulderPenalty * 50);
+        },
+        instructions:
+            "Slowly roll your head in a circle, bringing your chin towards your chest and holding that flexed position for 10 seconds.",
+        messages: {
+            initialPrompt: "⬆️ Lower your chin towards your chest",
+            holdPrompt: (secondsRemaining) =>
+                `👉 Hold chin to chest: ${secondsRemaining}s left`,
+            success: "✅ Good rep! Chin to chest held for 10s.",
         },
     },
 }; 
