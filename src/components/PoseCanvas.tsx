@@ -24,6 +24,7 @@ export default function PoseCanvas({
   useEffect(() => {
     let detector: poseDetection.PoseDetector | null = null;
     let animationFrameId: number | null = null;
+    const videoElement = videoRef.current;
 
     const setup = async () => {
       // Set and await backend
@@ -65,9 +66,10 @@ export default function PoseCanvas({
     setup();
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      const video = videoRef.current;
-      if (video && video.srcObject) {
-        (video.srcObject as MediaStream).getTracks().forEach((track) => track.stop());
+      if (videoElement && videoElement.srcObject) {
+        (videoElement.srcObject as MediaStream)
+          .getTracks()
+          .forEach((track) => track.stop());
       }
     };
   }, [KEYPOINT_CONNECTIONS, SCORE_THRESHOLD]);

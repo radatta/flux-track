@@ -25,6 +25,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Suppress the warning about webgpu being already registered
+  if (process.env.NODE_ENV === "development") {
+    const originalWarn = console.warn;
+    console.warn = function (...args) {
+      if (
+        typeof args[0] === "string" &&
+        (args[0].includes("already registered") ||
+          args[0].includes("for backend") ||
+          args[0].includes("already been set."))
+      ) {
+        // Suppress this warning
+        return;
+      }
+      originalWarn.apply(console, args);
+    };
+  }
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>

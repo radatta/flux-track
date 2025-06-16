@@ -114,12 +114,12 @@ export function ProgressDashboard() {
     return <div className="text-center py-20">Loading...</div>;
   }
 
-  const getAccuracyColor = (accuracy: number) => {
-    if (accuracy >= 90) return "text-green-600";
-    if (accuracy >= 80) return "text-[#6B8EFF]";
-    if (accuracy >= 70) return "text-yellow-600";
-    return "text-red-600";
-  };
+  // const getAccuracyColor = (accuracy: number) => {
+  //   if (accuracy >= 90) return "text-green-600";
+  //   if (accuracy >= 80) return "text-[#6B8EFF]";
+  //   if (accuracy >= 70) return "text-yellow-600";
+  //   return "text-red-600";
+  // };
 
   const getAccuracyBadge = (accuracy: number) => {
     if (accuracy >= 90) return "bg-green-100 text-green-700";

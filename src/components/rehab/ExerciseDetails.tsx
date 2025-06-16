@@ -14,6 +14,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Exercise {
   slug: string;
@@ -26,6 +27,7 @@ interface Exercise {
   instructions: string[];
   tips: string[];
   warnings: string[];
+  media_url: string;
 }
 
 interface ExerciseDetailProps {
@@ -82,9 +84,11 @@ export function ExerciseDetail({ exercise }: ExerciseDetailProps) {
             </CardHeader>
             <CardContent>
               <div className="relative aspect-video bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                <img
-                  src="/placeholder.svg?height=400&width=600"
+                <Image
+                  src={exercise.media_url}
                   alt={`${exercise.name} demonstration`}
+                  width={500}
+                  height={500}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20">

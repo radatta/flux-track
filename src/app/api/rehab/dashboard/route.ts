@@ -123,7 +123,7 @@ export async function GET() {
         }));
 
     // Achievements placeholder
-    const achievements: any[] = [];
+    // const achievements: any[] = [];
 
     return NextResponse.json({
         currentStreak: streak,
@@ -133,6 +133,6 @@ export async function GET() {
         weeklyProgressData,
         monthlyData,
         recentSessions,
-        achievements,
+        achievements: [],
     });
 } 

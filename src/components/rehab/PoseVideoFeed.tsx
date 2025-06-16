@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Play, Pause, RotateCcw } from "lucide-react";
 import * as tf from "@tensorflow/tfjs";
-import "@tensorflow/tfjs-backend-webgl";
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import { drawKeypointConnections, drawKeypointsWithCoords } from "@/utils/drawUtils";
 import { exerciseConfigs } from "@/utils/exerciseConfig";
@@ -39,6 +38,7 @@ export default function PoseVideoFeed({
   onPoseDataChange,
   onSessionTimeChange,
 }: PoseVideoFeedProps) {
+  const [mounted, setMounted] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [poseData, setPoseData] = useState<PoseData>({
@@ -48,6 +48,10 @@ export default function PoseVideoFeed({
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Log reps to server whenever repCount increases
   const prevRepRef = useRef(0);
@@ -69,8 +73,8 @@ export default function PoseVideoFeed({
   }, [poseData.repCount, sessionId]);
 
   // Propagate updates to parent whenever poseData or sessionTime changes
-  useEffect(() => onPoseDataChange(poseData), [poseData]);
-  useEffect(() => onSessionTimeChange(sessionTime), [sessionTime]);
+  useEffect(() => onPoseDataChange(poseData), [onPoseDataChange, poseData]);
+  useEffect(() => onSessionTimeChange(sessionTime), [onSessionTimeChange, sessionTime]);
 
   // Increment session timer while active
   useEffect(() => {
@@ -308,6 +312,10 @@ export default function PoseVideoFeed({
     prevRepRef.current = 0;
     setPoseData(defaultPoseData);
   };
+
+  if (!mounted) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="lg:col-span-3">

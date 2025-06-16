@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useState } from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function NavBar() {
   const { user, loading } = useUser();
@@ -31,11 +32,14 @@ export default function NavBar() {
           <Popover>
             <PopoverTrigger asChild>
               {user.user_metadata?.avatar_url ? (
-                <img
-                  src={user.user_metadata.avatar_url}
-                  alt="avatar"
-                  className="w-8 h-8 rounded-full object-cover border border-gray-200 cursor-pointer"
-                />
+                <Avatar>
+                  <AvatarImage src={user.user_metadata.avatar_url} />
+                  <AvatarFallback>
+                    {user.user_metadata?.full_name
+                      ? user.user_metadata.full_name.split(" ")[0][0]
+                      : user.email?.[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               ) : (
                 <div className="w-8 h-8 rounded-full bg-[#6B8EFF] flex items-center justify-center text-white font-bold text-sm border border-gray-200 cursor-pointer">
                   {user.user_metadata?.full_name
@@ -51,11 +55,14 @@ export default function NavBar() {
             <PopoverContent className="flex flex-col items-center w-64 p-5 bg-white rounded-xl shadow-lg">
               {user.user_metadata?.avatar_url ? (
                 <div className="bg-[#F3F6FF] rounded-full p-1 mb-2">
-                  <img
-                    src={user.user_metadata.avatar_url}
-                    alt="avatar"
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
+                  <Avatar>
+                    <AvatarImage src={user.user_metadata.avatar_url} />
+                    <AvatarFallback>
+                      {user.user_metadata?.full_name
+                        ? user.user_metadata.full_name.split(" ")[0][0]
+                        : user.email?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
               ) : (
                 <div className="w-16 h-16 rounded-full bg-[#6B8EFF] flex items-center justify-center text-white font-bold text-2xl mb-2">

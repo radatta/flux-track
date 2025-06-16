@@ -5,15 +5,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Play, Clock, BarChart3, Filter } from "lucide-react";
+import { Search, Play, Clock } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export function ExerciseLibrary() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,10 +78,12 @@ export function ExerciseLibrary() {
           >
             <CardHeader className="p-0">
               <div className="relative overflow-hidden rounded-t-lg">
-                <img
-                  src={exercise.media_url || "/placeholder.svg"}
+                <Image
+                  src={exercise.media_url}
                   alt={exercise.name}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  width={500}
+                  height={500}
+                  className="w-full h-full object-cover"
                 />
                 <div className="absolute top-3 right-3"></div>
               </div>
