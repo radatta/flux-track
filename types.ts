@@ -7,47 +7,124 @@ export type Json =
   | Json[];
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          variables?: Json;
+          operationName?: string;
+          query?: string;
+          extensions?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
-      logs: {
+      exercise_reps: {
         Row: {
-          ai_recommendations: string | null;
-          ai_summary: string | null;
-          created_at: string;
-          embedding: string | null;
-          energy: number;
+          completed_at: string | null;
+          duration_seconds: number | null;
           id: string;
-          mood: number;
-          notes: string | null;
-          sentiment: Json | null;
-          tags: string[] | null;
-          user_id: string;
+          rep_number: number;
+          session_id: string | null;
+          started_at: string | null;
         };
         Insert: {
-          ai_recommendations?: string | null;
-          ai_summary?: string | null;
-          created_at?: string;
-          embedding?: string | null;
-          energy: number;
+          completed_at?: string | null;
+          duration_seconds?: number | null;
           id?: string;
-          mood: number;
-          notes?: string | null;
-          sentiment?: Json | null;
-          tags?: string[] | null;
-          user_id: string;
+          rep_number: number;
+          session_id?: string | null;
+          started_at?: string | null;
         };
         Update: {
-          ai_recommendations?: string | null;
-          ai_summary?: string | null;
-          created_at?: string;
-          embedding?: string | null;
-          energy?: number;
+          completed_at?: string | null;
+          duration_seconds?: number | null;
           id?: string;
-          mood?: number;
-          notes?: string | null;
-          sentiment?: Json | null;
-          tags?: string[] | null;
-          user_id?: string;
+          rep_number?: number;
+          session_id?: string | null;
+          started_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "exercise_reps_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "exercise_sessions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      exercise_sessions: {
+        Row: {
+          completed_at: string | null;
+          exercise_id: string | null;
+          id: string;
+          started_at: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          completed_at?: string | null;
+          exercise_id?: string | null;
+          id?: string;
+          started_at?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          completed_at?: string | null;
+          exercise_id?: string | null;
+          id?: string;
+          started_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "exercise_sessions_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "exercises";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      exercises: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          instructions: string;
+          media_url: string | null;
+          name: string;
+          slug: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          instructions: string;
+          media_url?: string | null;
+          name: string;
+          slug: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          instructions?: string;
+          media_url?: string | null;
+          name?: string;
+          slug?: string;
         };
         Relationships: [];
       };
@@ -56,98 +133,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      binary_quantize: {
-        Args: { "": string } | { "": unknown };
-        Returns: unknown;
-      };
-      halfvec_avg: {
-        Args: { "": number[] };
-        Returns: unknown;
-      };
-      halfvec_out: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      halfvec_send: {
-        Args: { "": unknown };
-        Returns: string;
-      };
-      halfvec_typmod_in: {
-        Args: { "": unknown[] };
-        Returns: number;
-      };
-      hnsw_bit_support: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      hnsw_halfvec_support: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      hnsw_sparsevec_support: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      hnswhandler: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      ivfflat_bit_support: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      ivfflat_halfvec_support: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      ivfflathandler: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown };
-        Returns: number;
-      };
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown };
-        Returns: string;
-      };
-      sparsevec_out: {
-        Args: { "": unknown };
-        Returns: unknown;
-      };
-      sparsevec_send: {
-        Args: { "": unknown };
-        Returns: string;
-      };
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] };
-        Returns: number;
-      };
-      vector_avg: {
-        Args: { "": number[] };
-        Returns: string;
-      };
-      vector_dims: {
-        Args: { "": string } | { "": unknown };
-        Returns: number;
-      };
-      vector_norm: {
-        Args: { "": string };
-        Returns: number;
-      };
-      vector_out: {
-        Args: { "": string };
-        Returns: unknown;
-      };
-      vector_send: {
-        Args: { "": string };
-        Returns: string;
-      };
-      vector_typmod_in: {
-        Args: { "": unknown[] };
-        Returns: number;
-      };
+      [_ in never]: never;
     };
     Enums: {
       [_ in never]: never;
@@ -264,6 +250,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

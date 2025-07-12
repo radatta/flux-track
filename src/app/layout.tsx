@@ -16,8 +16,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "FluxTrack - Mood & Energy Journal",
-  description: "Track your mood and energy levels with AI-powered insights",
+  title: "FluxTrack - AI-Powered Rehabilitation Assistant",
+  description:
+    "Real-time exercise feedback and progress tracking using AI pose detection",
 };
 
 export default function RootLayout({
