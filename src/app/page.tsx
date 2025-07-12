@@ -1,7 +1,15 @@
 import type React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BarChart2, Brain, LineChart, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Activity,
+  Camera,
+  Target,
+  TrendingUp,
+  Timer,
+  Zap,
+} from "lucide-react";
 import OneTapComponent from "@/components/OneTapComponent";
 
 export default function LandingPage() {
@@ -11,11 +19,11 @@ export default function LandingPage() {
       <section className="container mx-auto px-4 pt-24 pb-16 md:pt-32 md:pb-24">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-[#6B8EFF] to-[#A0D8FF] bg-clip-text text-transparent">
-            Track your mood. Discover your patterns.
+            Perfect your rehab. Track your progress.
           </h1>
           <p className="text-lg md:text-xl mb-8 text-[#2D3748]/80">
-            FluxTrack helps you understand your emotional patterns with AI-powered
-            insights and beautiful visualizations.
+            FluxTrack provides real-time exercise feedback using AI-powered pose detection
+            to help you recover faster and more effectively.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -46,34 +54,34 @@ export default function LandingPage() {
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <FeatureCard
-            icon={<BarChart2 className="h-8 w-8 text-[#6B8EFF]" />}
-            title="Track Daily Moods"
-            description="Quickly log your mood and energy levels with a simple, intuitive interface."
+            icon={<Camera className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Real-Time Pose Detection"
+            description="Get instant feedback on your exercise form using advanced AI pose estimation."
           />
           <FeatureCard
-            icon={<LineChart className="h-8 w-8 text-[#6B8EFF]" />}
-            title="Visualize Trends"
-            description="See patterns in your emotional wellbeing with beautiful, insightful charts."
+            icon={<Target className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Exercise Accuracy"
+            description="Receive precise feedback on your posture and movement quality during exercises."
           />
           <FeatureCard
-            icon={<Sparkles className="h-8 w-8 text-[#6B8EFF]" />}
-            title="AI-Powered Insights"
-            description="Receive personalized recommendations based on your mood patterns."
+            icon={<Timer className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Session Tracking"
+            description="Monitor your exercise sessions with detailed rep counting and hold-time measurements."
           />
           <FeatureCard
-            icon={<Brain className="h-8 w-8 text-[#6B8EFF]" />}
-            title="Smart Analysis"
-            description="Our AI analyzes your entries to identify triggers and patterns."
+            icon={<Activity className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Exercise Library"
+            description="Access a comprehensive library of rehabilitation exercises with video instructions."
           />
           <FeatureCard
-            icon={<ArrowRight className="h-8 w-8 text-[#6B8EFF]" />}
-            title="Personalized Prompts"
-            description="Get journal prompts tailored to your current emotional state."
+            icon={<TrendingUp className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Progress Analytics"
+            description="Track your improvement over time with detailed progress reports and insights."
           />
           <FeatureCard
-            icon={<ArrowRight className="h-8 w-8 text-[#6B8EFF]" />}
-            title="Semantic Search"
-            description="Find past entries based on emotions and themes, not just keywords."
+            icon={<Zap className="h-8 w-8 text-[#6B8EFF]" />}
+            title="Instant Feedback"
+            description="Get immediate visual and audio feedback to correct your form in real-time."
           />
         </div>
       </section>
@@ -82,11 +90,11 @@ export default function LandingPage() {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center bg-gradient-to-r from-[#6B8EFF]/10 to-[#A0D8FF]/10 p-8 md:p-12 rounded-2xl">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Start your journey today
+            Start your recovery journey today
           </h2>
           <p className="text-lg mb-8">
-            Join thousands of others who are discovering insights about their emotional
-            wellbeing.
+            Join thousands of others who are improving their rehabilitation outcomes with
+            AI-powered exercise guidance.
           </p>
           <Button
             asChild
