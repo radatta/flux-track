@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface SignInFormProps {
   className?: string;
@@ -15,6 +16,7 @@ export default function SignInForm({ className }: SignInFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +37,7 @@ export default function SignInForm({ className }: SignInFormProps) {
       toast.success("Signed in successfully.");
       setEmail("");
       setPassword("");
+      router.push("/dashboard");
     }
   };
 
@@ -75,7 +78,7 @@ export default function SignInForm({ className }: SignInFormProps) {
         </Button>
         <div className="text-center text-sm">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-[#6B8EFF] hover:underline">
+          <Link href="/auth/signup" className="text-[#6B8EFF] hover:underline">
             Sign up
           </Link>
         </div>
