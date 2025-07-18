@@ -11,6 +11,7 @@ import { drawKeypointConnections, drawKeypointsWithCoords } from "@/utils/drawUt
 import { exerciseConfigs } from "@/utils/exerciseConfig";
 import type { NamedKeypoints } from "@/utils/exerciseConfig";
 import { PoseData } from "./poseTypes";
+import useSound from "use-sound";
 
 interface PoseVideoFeedProps {
   currentExercise: string;
@@ -48,6 +49,8 @@ export default function PoseVideoFeed({
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [playPopSound] = useSound("/sounds/pop.mp3");
+  const [playKachingSound] = useSound("/sounds/kaching.mp3");
 
   useEffect(() => {
     setMounted(true);
@@ -219,6 +222,7 @@ export default function PoseVideoFeed({
                 }));
                 inPose = false;
                 poseStartTime = null;
+                playKachingSound();
               } else {
                 const secondsRemaining = 10 - holdSeconds;
                 setPoseData((prev) => ({
@@ -229,6 +233,10 @@ export default function PoseVideoFeed({
                   accuracy: config.accuracyFunction(kpMap),
                   holdTime: holdSeconds,
                 }));
+                // Play pop sound only when first entering valid pose (first second of hold)
+                if (holdSeconds === 1) {
+                  playPopSound();
+                }
               }
             }
           }
