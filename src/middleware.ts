@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Define public paths
-  const PUBLIC_PATHS = ["/auth/signup", "/auth/signin", "/"];
+  const PUBLIC_PATHS = ["/auth/signup", "/auth/signin", "/auth/confirm", "/"];
 
   // If not logged in, only allow public paths
   if (!user) {
