@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS exercises (
 CREATE TABLE IF NOT EXISTS exercise_sessions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  exercise_id UUID REFERENCES exercises(id) ON DELETE CASCADE,
   started_at TIMESTAMPTZ DEFAULT NOW(),
   completed_at TIMESTAMPTZ
 );
@@ -21,6 +20,7 @@ CREATE TABLE IF NOT EXISTS exercise_sessions (
 CREATE TABLE IF NOT EXISTS exercise_reps (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   session_id UUID REFERENCES exercise_sessions(id) ON DELETE CASCADE,
+  exercise_id UUID REFERENCES exercises(id) ON DELETE CASCADE,
   rep_number INTEGER NOT NULL,         -- e.g. 1, 2, 3...
   started_at TIMESTAMPTZ DEFAULT NOW(),
   completed_at TIMESTAMPTZ,

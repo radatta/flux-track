@@ -46,6 +46,7 @@ export function LivePoseEstimation() {
           currentExercise={currentExercise}
           onExerciseChange={setCurrentExercise}
           exercises={exercises}
+          autoDetectionEnabled={true}
         />
 
         {/* Main Grid */}
@@ -54,6 +55,7 @@ export function LivePoseEstimation() {
             currentExercise={currentExercise}
             onPoseDataChange={setPoseData}
             onSessionTimeChange={setSessionTime}
+            onExerciseChange={setCurrentExercise}
           />
           <PoseSidebar poseData={poseData} sessionTime={sessionTime} />
         </div>

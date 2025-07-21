@@ -36,6 +36,12 @@ export function RehabSettings() {
   const [enablePoseOverlay, setEnablePoseOverlay] = useState(true);
   const [enableConfidenceDisplay, setEnableConfidenceDisplay] = useState(true);
 
+  // Auto-Detection Settings
+  const [enableAutoDetection, setEnableAutoDetection] = useState(true);
+  const [detectionSensitivity, setDetectionSensitivity] = useState([75]);
+  const [switchingThreshold, setSwitchingThreshold] = useState([75]);
+  const [switchCooldown, setSwitchCooldown] = useState([2]);
+
   // Audio & Visual Settings
   const [enableVoiceFeedback, setEnableVoiceFeedback] = useState(true);
   const [voiceVolume, setVoiceVolume] = useState([70]);
@@ -68,6 +74,12 @@ export function RehabSettings() {
         repCountSensitivity: repCountSensitivity[0],
         enablePoseOverlay,
         enableConfidenceDisplay,
+      },
+      autoDetection: {
+        enabled: enableAutoDetection,
+        sensitivity: detectionSensitivity[0],
+        switchingThreshold: switchingThreshold[0],
+        switchCooldown: switchCooldown[0],
       },
       audio: {
         enableVoiceFeedback,
@@ -106,6 +118,10 @@ export function RehabSettings() {
     setRepCountSensitivity([80]);
     setEnablePoseOverlay(true);
     setEnableConfidenceDisplay(true);
+    setEnableAutoDetection(true);
+    setDetectionSensitivity([75]);
+    setSwitchingThreshold([75]);
+    setSwitchCooldown([2]);
     setEnableVoiceFeedback(true);
     setVoiceVolume([70]);
     setEnableSoundEffects(true);
@@ -226,6 +242,86 @@ export function RehabSettings() {
                 />
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Auto-Detection Settings */}
+        <Card className="bg-white border-[#6B8EFF]/20">
+          <CardHeader>
+            <CardTitle className="text-lg">Exercise Auto-Detection</CardTitle>
+            <p className="text-sm text-gray-600">
+              Configure automatic exercise recognition and switching
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="auto-detection">Enable Auto-Detection</Label>
+                <p className="text-sm text-gray-500">
+                  Automatically detect and switch exercises based on your movements
+                </p>
+              </div>
+              <Switch
+                id="auto-detection"
+                checked={enableAutoDetection}
+                onCheckedChange={setEnableAutoDetection}
+              />
+            </div>
+
+            {enableAutoDetection && (
+              <>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label>Detection Sensitivity: {detectionSensitivity[0]}%</Label>
+                  </div>
+                  <Slider
+                    value={detectionSensitivity}
+                    onValueChange={setDetectionSensitivity}
+                    max={100}
+                    min={30}
+                    step={5}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Higher values require more precise movements to detect exercises
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label>Switching Threshold: {switchingThreshold[0]}%</Label>
+                  </div>
+                  <Slider
+                    value={switchingThreshold}
+                    onValueChange={setSwitchingThreshold}
+                    max={95}
+                    min={50}
+                    step={5}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Confidence required to switch to a different exercise
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label>Switch Cooldown: {switchCooldown[0]}s</Label>
+                  </div>
+                  <Slider
+                    value={switchCooldown}
+                    onValueChange={setSwitchCooldown}
+                    max={10}
+                    min={1}
+                    step={1}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Minimum time between automatic exercise switches
+                  </p>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 

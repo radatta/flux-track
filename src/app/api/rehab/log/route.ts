@@ -16,10 +16,11 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { sessionId, repNumber, durationSeconds } = body as {
+  const { sessionId, repNumber, durationSeconds, exerciseSlug } = body as {
     sessionId?: string;
     repNumber?: number;
     durationSeconds?: number;
+    exerciseSlug?: string;
   };
 
   if (!sessionId || !repNumber) {
@@ -29,12 +30,28 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Look up exercise ID if exerciseSlug is provided
+  let exerciseId: string | null = null;
+  if (exerciseSlug) {
+    const { data: exercise, error: exerciseError } = await supabase
+      .from("exercises")
+      .select("id")
+      .eq("slug", exerciseSlug)
+      .single();
+
+    if (!exerciseError && exercise) {
+      exerciseId = exercise.id;
+    }
+  }
+
   const { data, error } = await supabase
     .from("exercise_reps")
     .insert({
       session_id: sessionId,
       rep_number: repNumber,
       duration_seconds: durationSeconds,
+      exercise_id: exerciseId,
+      completed_at: new Date().toISOString(),
     })
     .select("id, rep_number, session_id")
     .single();

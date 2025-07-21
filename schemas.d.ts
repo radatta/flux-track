@@ -7,7 +7,9 @@
 import { z } from "zod";
 import * as generated from "./schemas";
 export type Json = z.infer<typeof generated.jsonSchema>;
-export type PublicExerciserepsRow = z.infer<typeof generated.publicExerciseRepsRowSchema>;
+export type PublicExerciserepsRow = z.infer<
+  typeof generated.publicExerciseRepsRowSchema
+>;
 export type PublicExerciserepsInsert = z.infer<
   typeof generated.publicExerciseRepsInsertSchema
 >;
@@ -26,9 +28,12 @@ export type PublicExercisesessionsInsert = z.infer<
 export type PublicExercisesessionsUpdate = z.infer<
   typeof generated.publicExerciseSessionsUpdateSchema
 >;
-export type PublicExercisesessionsRelationships = z.infer<
-  typeof generated.publicExerciseSessionsRelationshipsSchema
+export type PublicExercisesRow = z.infer<
+  typeof generated.publicExercisesRowSchema
 >;
-export type PublicExercisesRow = z.infer<typeof generated.publicExercisesRowSchema>;
-export type PublicExercisesInsert = z.infer<typeof generated.publicExercisesInsertSchema>;
-export type PublicExercisesUpdate = z.infer<typeof generated.publicExercisesUpdateSchema>;
+export type PublicExercisesInsert = z.infer<
+  typeof generated.publicExercisesInsertSchema
+>;
+export type PublicExercisesUpdate = z.infer<
+  typeof generated.publicExercisesUpdateSchema
+>;

@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import type { NextRequest } from "next/server";
 
 // POST /api/rehab/session -> start a new session
-export async function POST(request: NextRequest) {
+export async function POST() {
   const supabase = await createClient();
 
   // Validate user
@@ -16,29 +15,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const exerciseSlug: string | undefined = body.exerciseSlug;
-
-  if (!exerciseSlug) {
-    return NextResponse.json({ error: "exerciseSlug is required" }, { status: 400 });
-  }
-
-  // Find exercise by slug
-  const { data: exercise, error: exError } = await supabase
-    .from("exercises")
-    .select("id")
-    .eq("slug", exerciseSlug)
-    .single();
-
-  if (exError || !exercise) {
-    return NextResponse.json({ error: "Exercise not found" }, { status: 404 });
-  }
+  // Note: exerciseSlug is no longer needed since sessions don't track exercises
+  // Exercise tracking is now done at the rep level
 
   // Insert new session
   const { data: session, error: insertError } = await supabase
     .from("exercise_sessions")
-    .insert({ user_id: user.id, exercise_id: exercise.id })
-    .select("id, started_at, exercise_id")
+    .insert({
+      user_id: user.id
+    })
+    .select("id, started_at")
     .single();
 
   if (insertError) {
@@ -49,8 +35,8 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(session, { status: 201 });
 }
 
-// GET /api/rehab/session -> current active session for user (optionally by exerciseSlug)
-export async function GET(request: NextRequest) {
+// GET /api/rehab/session -> current active session for user
+export async function GET() {
   const supabase = await createClient();
 
   const {
@@ -62,29 +48,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const exerciseSlug = searchParams.get("exerciseSlug");
-
   // Build query
-  let query = supabase
+  const query = supabase
     .from("exercise_sessions")
-    .select(`id, started_at, exercise_id, exercises!exercise_id(id, slug, name)`)
+    .select(`id, started_at`)
     .eq("user_id", user.id)
     .is("completed_at", null)
     .order("started_at", { ascending: false })
     .limit(1);
-
-  if (exerciseSlug) {
-    // find exercise id first
-    const { data: exercise, error: exError } = await supabase
-      .from("exercises")
-      .select("id")
-      .eq("slug", exerciseSlug)
-      .single();
-    if (!exError && exercise) {
-      query = query.eq("exercise_id", exercise.id);
-    }
-  }
 
   const { data: sessions, error } = await query;
 

@@ -11,12 +11,14 @@ import { drawKeypointConnections, drawKeypointsWithCoords } from "@/utils/drawUt
 import { exerciseConfigs } from "@/utils/exerciseConfig";
 import type { NamedKeypoints } from "@/utils/exerciseConfig";
 import { PoseData } from "./poseTypes";
+import { ExerciseDetectionEngine } from "@/utils/exerciseDetection";
 import useSound from "use-sound";
 
 interface PoseVideoFeedProps {
   currentExercise: string;
   onPoseDataChange: (data: PoseData) => void;
   onSessionTimeChange: (time: number) => void;
+  onExerciseChange?: (exercise: string) => void; // For auto-switching
 }
 
 // Constants mirroring original logic
@@ -38,6 +40,7 @@ export default function PoseVideoFeed({
   currentExercise,
   onPoseDataChange,
   onSessionTimeChange,
+  onExerciseChange,
 }: PoseVideoFeedProps) {
   const [mounted, setMounted] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -47,21 +50,41 @@ export default function PoseVideoFeed({
   });
   const [sessionTime, setSessionTime] = useState(0);
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
+  const [, setDetectedExercise] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [playPopSound] = useSound("/sounds/pop.mp3");
   const [playKachingSound] = useSound("/sounds/kaching.mp3");
 
+  // Exercise detection engine
+  const detectionEngineRef = useRef<ExerciseDetectionEngine | null>(null);
+
   useEffect(() => {
     setMounted(true);
+    // Initialize detection engine
+    const toConfigKey = (val: string) => val.replace(/-/g, "_");
+    detectionEngineRef.current = new ExerciseDetectionEngine(
+      toConfigKey(currentExercise)
+    );
   }, []);
+
+  // Update detection engine when currentExercise changes externally (manual selection)
+  useEffect(() => {
+    if (detectionEngineRef.current) {
+      const toConfigKey = (val: string) => val.replace(/-/g, "_");
+      detectionEngineRef.current.forceExercise(toConfigKey(currentExercise));
+    }
+  }, [currentExercise]);
 
   // Log reps to server whenever repCount increases
   const prevRepRef = useRef(0);
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId || !detectionEngineRef.current) return;
     if (poseData.repCount > prevRepRef.current) {
-      // new rep detected
+      // new rep detected - include the exercise that was performed
+      const currentExercise = detectionEngineRef.current.getState().currentExercise;
+      const fromConfigKey = (val: string) => val.replace(/_/g, "-");
+
       fetch("/api/rehab/log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,6 +92,7 @@ export default function PoseVideoFeed({
           sessionId,
           repNumber: poseData.repCount,
           durationSeconds: 10, // default
+          exerciseSlug: currentExercise ? fromConfigKey(currentExercise) : null,
         }),
       }).catch((err) => console.error(err));
       prevRepRef.current = poseData.repCount;
@@ -86,14 +110,27 @@ export default function PoseVideoFeed({
     return () => clearInterval(timer);
   }, [isActive]);
 
-  const toConfigKey = (val: string) => val.replace(/-/g, "_");
-
-  // Real pose-detection logic
+  // Auto-create session when detection starts
   useEffect(() => {
-    if (!isActive || cameraPermission !== true) return;
+    if (isActive && cameraPermission === true && !sessionId) {
+      // Auto-create session when detection becomes active
+      fetch("/api/rehab/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setSessionId(data.id);
+          prevRepRef.current = 0;
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [isActive, cameraPermission, sessionId, currentExercise]);
 
-    const configKey = toConfigKey(currentExercise);
-    const config = exerciseConfigs[configKey] ?? exerciseConfigs["head_tilt_right"];
+  // Real pose-detection logic with auto-detection
+  useEffect(() => {
+    if (!isActive || cameraPermission !== true || !detectionEngineRef.current) return;
 
     let detector: poseDetection.PoseDetector | null = null;
     let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -101,6 +138,9 @@ export default function PoseVideoFeed({
 
     let inPose = false;
     let poseStartTime: Date | null = null;
+    let currentDetectedExercise: string | null = null;
+
+    const fromConfigKey = (val: string) => val.replace(/_/g, "-");
 
     const setup = async () => {
       await tf.setBackend("webgl");
@@ -137,24 +177,30 @@ export default function PoseVideoFeed({
           if (DRAW_KEYPOINTS) {
             drawKeypointsWithCoords(ctx, keypoints, scaleX, scaleY, SCORE_THRESHOLD);
           }
-          if (DRAW_KEYPOINT_CONNECTIONS) {
-            drawKeypointConnections(
-              ctx,
-              keypoints,
-              scaleX,
-              scaleY,
-              config.keypointConnections,
-              SCORE_THRESHOLD
-            );
+
+          // Draw connections for the current detected exercise
+          if (DRAW_KEYPOINT_CONNECTIONS && currentDetectedExercise) {
+            const config = exerciseConfigs[currentDetectedExercise];
+            if (config) {
+              drawKeypointConnections(
+                ctx,
+                keypoints,
+                scaleX,
+                scaleY,
+                config.keypointConnections,
+                SCORE_THRESHOLD
+              );
+            }
           }
         }
 
         animationFrameId = requestAnimationFrame(render);
       };
 
-      // Pose-analysis interval (1s)
+      // Pose-analysis interval (1s) with auto-detection
       intervalId = setInterval(async () => {
-        if (!detector || !video) return;
+        if (!detector || !video || !detectionEngineRef.current) return;
+
         const poses = await detector.estimatePoses(video);
         if (poses.length === 0) {
           inPose = false;
@@ -174,69 +220,110 @@ export default function PoseVideoFeed({
           if (kp.name) kpMap[kp.name] = kp as poseDetection.Keypoint;
         });
 
-        const requiredPresent = config.requiredKeypoints.every(
-          (name) => (kpMap[name]?.score ?? 0) > SCORE_THRESHOLD
-        );
+        // Use the detection engine to find the best exercise match
+        const detectionResults = detectionEngineRef.current.detectAllExercises(kpMap);
+        const bestMatch = detectionEngineRef.current.getBestMatch(detectionResults);
 
-        let confidence = 0;
-        if (requiredPresent) {
-          const scores = config.requiredKeypoints.map((n) => kpMap[n]?.score ?? 0);
-          confidence = (scores.reduce((sum, s) => sum + s, 0) / scores.length) * 100;
+        if (!bestMatch) {
+          inPose = false;
+          poseStartTime = null;
+          currentDetectedExercise = null;
+          setPoseData((prev) => ({
+            ...prev,
+            isCorrect: false,
+            feedback: "Position yourself clearly in the camera view",
+            confidence: 0,
+            accuracy: 0,
+            holdTime: 0,
+          }));
+          return;
         }
 
-        if (requiredPresent && config.primaryCheck(kpMap)) {
-          const failingSecondary = config.secondaryChecks?.find((sc) =>
-            sc.invalidCheck(kpMap)
-          );
+        // Check if we should switch exercises
+        const shouldSwitch = detectionEngineRef.current.shouldSwitchExercise(
+          bestMatch,
+          inPose
+        );
 
-          if (failingSecondary) {
-            inPose = false;
-            poseStartTime = null;
-            setPoseData((prev) => ({
-              ...prev,
-              isCorrect: false,
-              feedback: failingSecondary.message,
-              confidence,
-              accuracy: config.accuracyFunction(kpMap),
-              holdTime: 0,
-            }));
-          } else {
-            if (!inPose) {
-              inPose = true;
-              poseStartTime = new Date();
-            }
+        if (shouldSwitch) {
+          currentDetectedExercise = bestMatch.exerciseKey;
+          setDetectedExercise(bestMatch.exerciseKey);
 
-            if (poseStartTime) {
-              const elapsed = Date.now() - poseStartTime.getTime();
-              const holdSeconds = Math.floor(elapsed / 1000);
+          const newExerciseSlug = fromConfigKey(bestMatch.exerciseKey);
 
-              if (elapsed >= HOLD_TARGET_MS) {
-                setPoseData((prev) => ({
-                  ...prev,
-                  isCorrect: true,
-                  feedback: config.messages.success,
-                  confidence,
-                  accuracy: config.accuracyFunction(kpMap),
-                  holdTime: 0,
-                  repCount: prev.repCount + 1,
-                }));
-                inPose = false;
-                poseStartTime = null;
-                playKachingSound();
-              } else {
-                const secondsRemaining = 10 - holdSeconds;
-                setPoseData((prev) => ({
-                  ...prev,
-                  isCorrect: true,
-                  feedback: config.messages.holdPrompt(secondsRemaining),
-                  confidence,
-                  accuracy: config.accuracyFunction(kpMap),
-                  holdTime: holdSeconds,
-                }));
-                // Play pop sound only when first entering valid pose (first second of hold)
-                if (holdSeconds === 1) {
-                  playPopSound();
-                }
+          // Notify parent component of exercise change
+          if (onExerciseChange) {
+            onExerciseChange(newExerciseSlug);
+          }
+
+          // Reset pose state when switching
+          inPose = false;
+          poseStartTime = null;
+        }
+
+        // Update detection engine state
+        detectionEngineRef.current.updateState(
+          bestMatch.exerciseKey,
+          shouldSwitch,
+          inPose
+        );
+
+        // Use the current detected exercise for pose evaluation
+        const activeExercise =
+          detectionEngineRef.current.getState().currentExercise || bestMatch.exerciseKey;
+        const activeConfig = exerciseConfigs[activeExercise];
+        currentDetectedExercise = activeExercise;
+
+        if (!activeConfig) return;
+
+        // Calculate confidence for display
+        let confidence = 0;
+        if (bestMatch.exerciseKey === activeExercise) {
+          confidence = Math.round(bestMatch.confidence * 100);
+        }
+
+        // Evaluate the pose against the active exercise - check if the active exercise is being performed correctly
+        const activeExerciseResult = detectionResults.find(
+          (r) => r.exerciseKey === activeExercise
+        );
+        const isActiveExercisePassing = activeExerciseResult?.isPassing || false;
+
+        if (isActiveExercisePassing) {
+          if (!inPose) {
+            inPose = true;
+            poseStartTime = new Date();
+          }
+
+          if (poseStartTime) {
+            const elapsed = Date.now() - poseStartTime.getTime();
+            const holdSeconds = Math.floor(elapsed / 1000);
+
+            if (elapsed >= HOLD_TARGET_MS) {
+              setPoseData((prev) => ({
+                ...prev,
+                isCorrect: true,
+                feedback: activeConfig.messages.success,
+                confidence,
+                accuracy: activeExerciseResult?.accuracy || 0,
+                holdTime: 0,
+                repCount: prev.repCount + 1,
+              }));
+              inPose = false;
+              poseStartTime = null;
+              playKachingSound();
+            } else {
+              const secondsRemaining = 10 - holdSeconds;
+              setPoseData((prev) => ({
+                ...prev,
+                isCorrect: true,
+                feedback: activeConfig.messages.holdPrompt(secondsRemaining),
+                confidence,
+                accuracy: activeExerciseResult?.accuracy || 0,
+                holdTime: holdSeconds,
+              }));
+              // Play pop sound only when first entering valid pose (first second of hold)
+              if (holdSeconds === 1) {
+                playPopSound();
               }
             }
           }
@@ -246,9 +333,9 @@ export default function PoseVideoFeed({
           setPoseData((prev) => ({
             ...prev,
             isCorrect: false,
-            feedback: config.messages.initialPrompt,
+            feedback: activeExerciseResult?.feedback || bestMatch.feedback,
             confidence,
-            accuracy: config.accuracyFunction(kpMap),
+            accuracy: activeExerciseResult?.accuracy || bestMatch.accuracy,
             holdTime: 0,
           }));
         }
@@ -263,7 +350,7 @@ export default function PoseVideoFeed({
       if (intervalId) clearInterval(intervalId);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, currentExercise, cameraPermission]);
+  }, [isActive, cameraPermission, onExerciseChange, playPopSound, playKachingSound]);
 
   const startCamera = async () => {
     try {
@@ -283,21 +370,8 @@ export default function PoseVideoFeed({
       startCamera();
     }
 
-    // Starting session
-    if (!isActive) {
-      // Start new session on server
-      fetch("/api/rehab/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ exerciseSlug: currentExercise }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setSessionId(data.id);
-          prevRepRef.current = 0;
-        })
-        .catch((err) => console.error(err));
-    } else if (sessionId) {
+    // Stopping session
+    if (isActive && sessionId) {
       // Stopping session -> mark complete
       fetch("/api/rehab/session/complete", {
         method: "POST",
@@ -311,6 +385,7 @@ export default function PoseVideoFeed({
     }
 
     setIsActive(!isActive);
+    // Note: Session creation is now handled automatically in useEffect above
   };
 
   const resetSession = () => {
@@ -329,12 +404,24 @@ export default function PoseVideoFeed({
     <div className="lg:col-span-3">
       <Card className="bg-white border-[#6B8EFF]/20">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Camera className="h-5 w-5 text-[#6B8EFF]" />
-            <span>Camera Feed</span>
-            {cameraPermission === true && (
-              <Badge className="bg-green-100 text-green-700">Connected</Badge>
-            )}
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Camera className="h-5 w-5 text-[#6B8EFF]" />
+              <span>Camera Feed</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Badge variant={isActive ? "default" : "secondary"}>
+                {isActive ? "Active" : "Inactive"}
+              </Badge>
+              {cameraPermission === true && (
+                <Badge className="bg-green-100 text-green-700">Connected</Badge>
+              )}
+              {isActive && poseData.confidence > 0 && (
+                <Badge variant="outline" className="text-blue-600 border-blue-600">
+                  {Math.round(poseData.confidence)}% Confidence
+                </Badge>
+              )}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>

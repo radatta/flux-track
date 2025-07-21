@@ -16,12 +16,13 @@ export const jsonSchema: z.ZodSchema<Json> = z.lazy(() =>
       z.record(z.union([jsonSchema, z.undefined()])),
       z.array(jsonSchema),
     ])
-    .nullable()
+    .nullable(),
 );
 
 export const publicExerciseRepsRowSchema = z.object({
   completed_at: z.string().nullable(),
   duration_seconds: z.number().nullable(),
+  exercise_id: z.string().nullable(),
   id: z.string(),
   rep_number: z.number(),
   session_id: z.string().nullable(),
@@ -31,6 +32,7 @@ export const publicExerciseRepsRowSchema = z.object({
 export const publicExerciseRepsInsertSchema = z.object({
   completed_at: z.string().optional().nullable(),
   duration_seconds: z.number().optional().nullable(),
+  exercise_id: z.string().optional().nullable(),
   id: z.string().optional(),
   rep_number: z.number(),
   session_id: z.string().optional().nullable(),
@@ -40,6 +42,7 @@ export const publicExerciseRepsInsertSchema = z.object({
 export const publicExerciseRepsUpdateSchema = z.object({
   completed_at: z.string().optional().nullable(),
   duration_seconds: z.number().optional().nullable(),
+  exercise_id: z.string().optional().nullable(),
   id: z.string().optional(),
   rep_number: z.number().optional(),
   session_id: z.string().optional().nullable(),
@@ -47,6 +50,13 @@ export const publicExerciseRepsUpdateSchema = z.object({
 });
 
 export const publicExerciseRepsRelationshipsSchema = z.tuple([
+  z.object({
+    foreignKeyName: z.literal("exercise_reps_exercise_id_fkey"),
+    columns: z.tuple([z.literal("exercise_id")]),
+    isOneToOne: z.literal(false),
+    referencedRelation: z.literal("exercises"),
+    referencedColumns: z.tuple([z.literal("id")]),
+  }),
   z.object({
     foreignKeyName: z.literal("exercise_reps_session_id_fkey"),
     columns: z.tuple([z.literal("session_id")]),
@@ -58,7 +68,6 @@ export const publicExerciseRepsRelationshipsSchema = z.tuple([
 
 export const publicExerciseSessionsRowSchema = z.object({
   completed_at: z.string().nullable(),
-  exercise_id: z.string().nullable(),
   id: z.string(),
   started_at: z.string().nullable(),
   user_id: z.string().nullable(),
@@ -66,7 +75,6 @@ export const publicExerciseSessionsRowSchema = z.object({
 
 export const publicExerciseSessionsInsertSchema = z.object({
   completed_at: z.string().optional().nullable(),
-  exercise_id: z.string().optional().nullable(),
   id: z.string().optional(),
   started_at: z.string().optional().nullable(),
   user_id: z.string().optional().nullable(),
@@ -74,21 +82,10 @@ export const publicExerciseSessionsInsertSchema = z.object({
 
 export const publicExerciseSessionsUpdateSchema = z.object({
   completed_at: z.string().optional().nullable(),
-  exercise_id: z.string().optional().nullable(),
   id: z.string().optional(),
   started_at: z.string().optional().nullable(),
   user_id: z.string().optional().nullable(),
 });
-
-export const publicExerciseSessionsRelationshipsSchema = z.tuple([
-  z.object({
-    foreignKeyName: z.literal("exercise_sessions_exercise_id_fkey"),
-    columns: z.tuple([z.literal("exercise_id")]),
-    isOneToOne: z.literal(false),
-    referencedRelation: z.literal("exercises"),
-    referencedColumns: z.tuple([z.literal("id")]),
-  }),
-]);
 
 export const publicExercisesRowSchema = z.object({
   created_at: z.string().nullable(),
