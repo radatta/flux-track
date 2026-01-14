@@ -19,10 +19,10 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // If logged in and at /signup or /signin, redirect to /dashboard
+  // If logged in and at /signup or /signin, redirect to /rehab/progress
   if (PUBLIC_PATHS.includes(pathname) && pathname !== "/") {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/rehab/progress";
     return NextResponse.redirect(url);
   }
 

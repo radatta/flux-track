@@ -40,7 +40,7 @@ const OneTapComponent = () => {
         if (data.session) {
           console.log("Session data: ", data.session);
           if (pathname !== "/") {
-            router.push("/dashboard");
+            router.push("/rehab/progress");
           }
           return;
         }
@@ -62,7 +62,7 @@ const OneTapComponent = () => {
               console.log("Successfully logged in with Google One Tap");
 
               // redirect to protected page
-              router.push("/dashboard");
+              router.push("/rehab/progress");
             } catch (error) {
               console.error("Error logging in with Google One Tap", error);
             }

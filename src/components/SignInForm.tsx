@@ -37,7 +37,7 @@ export default function SignInForm({ className }: SignInFormProps) {
       toast.success("Signed in successfully.");
       setEmail("");
       setPassword("");
-      router.push("/dashboard");
+      router.push("/rehab/progress");
     }
   };
 

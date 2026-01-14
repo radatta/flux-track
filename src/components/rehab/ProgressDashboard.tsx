@@ -90,7 +90,7 @@ export function ProgressDashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch("/api/rehab/dashboard");
+        const res = await fetch("/api/rehab/progress");
         if (!res.ok) throw new Error("Failed to load dashboard");
         const data = await res.json();
         setWeeklyProgressData(data.weeklyProgressData);
