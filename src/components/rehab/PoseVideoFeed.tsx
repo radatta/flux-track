@@ -59,20 +59,29 @@ export default function PoseVideoFeed({
   const [, setDetectedExercise] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [playPopSound] = useSound("/sounds/pop.mp3");
   const [playKachingSound] = useSound("/sounds/kaching.mp3");
 
   // Exercise detection engine
   const detectionEngineRef = useRef<ExerciseDetectionEngine | null>(null);
 
+  // Initialize detection engine on mount only
   useEffect(() => {
     setMounted(true);
-    // Initialize detection engine
     const toConfigKey = (val: string) => val.replace(/-/g, "_");
     detectionEngineRef.current = new ExerciseDetectionEngine(
       toConfigKey(currentExercise)
     );
-  }, [currentExercise]);
+
+    // Cleanup camera stream on unmount
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []); // Only run on mount/unmount
 
   // Update detection engine when currentExercise changes externally (manual selection)
   useEffect(() => {
@@ -143,6 +152,8 @@ export default function PoseVideoFeed({
     let detector: poseDetection.PoseDetector | null = null;
     let intervalId: ReturnType<typeof setInterval> | null = null;
     let animationFrameId: number | null = null;
+    let metadataHandler: (() => void) | null = null;
+    let videoElement: HTMLVideoElement | null = null;
 
     let inPose = false;
     let poseStartTime: Date | null = null;
@@ -158,10 +169,12 @@ export default function PoseVideoFeed({
       const canvas = canvasRef.current;
       if (!video || !canvas) return;
 
+      videoElement = video;
       const setCanvasDims = () => {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
       };
+      metadataHandler = setCanvasDims;
       video.addEventListener("loadedmetadata", setCanvasDims);
       setCanvasDims();
 
@@ -377,6 +390,10 @@ export default function PoseVideoFeed({
     return () => {
       if (intervalId) clearInterval(intervalId);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      if (detector) detector.dispose();
+      if (videoElement && metadataHandler) {
+        videoElement.removeEventListener("loadedmetadata", metadataHandler);
+      }
     };
   }, [
     isActive,
@@ -390,6 +407,7 @@ export default function PoseVideoFeed({
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
@@ -397,6 +415,16 @@ export default function PoseVideoFeed({
     } catch (error) {
       console.error("Error accessing camera:", error);
       setCameraPermission(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
   };
 
@@ -429,6 +457,8 @@ export default function PoseVideoFeed({
     setSessionTime(0);
     prevRepRef.current = 0;
     setPoseData(defaultPoseData);
+    stopCamera();
+    setCameraPermission(null);
   };
 
   if (!mounted) {

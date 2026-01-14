@@ -164,12 +164,12 @@ export function drawReferenceOverlay(
   ctx.arc(rightX + padding, levelY, 8, 0, 2 * Math.PI);
   ctx.fill();
 
-  // Add a label
+  // Add a label below the line to avoid interfering with the y-distance annotation
   ctx.font = "bold 16px sans-serif";
   ctx.fillStyle = "#00E5CC";
   ctx.textAlign = "center";
-  ctx.textBaseline = "bottom";
-  ctx.fillText("KEEP SHOULDERS LEVEL", (leftX + rightX) / 2, levelY - 15);
+  ctx.textBaseline = "top";
+  ctx.fillText("KEEP SHOULDERS LEVEL", (leftX + rightX) / 2, levelY + 15);
 
   ctx.restore();
 }
