@@ -60,8 +60,9 @@ export default function PoseVideoFeed({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [playPopSound] = useSound("/sounds/pop.mp3");
-  const [playKachingSound] = useSound("/sounds/kaching.mp3");
+  const [playStartPopSound] = useSound("/sounds/pop-start.mp3");
+  const [playEndPopSound] = useSound("/sounds/pop-end.mp3");
+  const [playSuccessSound] = useSound("/sounds/success.mp3");
 
   // Exercise detection engine
   const detectionEngineRef = useRef<ExerciseDetectionEngine | null>(null);
@@ -242,6 +243,10 @@ export default function PoseVideoFeed({
 
         const poses = await detector.estimatePoses(video);
         if (poses.length === 0) {
+          // Play end sound if user was in pose but lost tracking
+          if (inPose) {
+            playEndPopSound();
+          }
           inPose = false;
           poseStartTime = null;
           setPoseData((prev) => ({
@@ -264,6 +269,10 @@ export default function PoseVideoFeed({
         const bestMatch = detectionEngineRef.current.getBestMatch(detectionResults);
 
         if (!bestMatch) {
+          // Play end sound if user was in pose but lost it
+          if (inPose) {
+            playEndPopSound();
+          }
           inPose = false;
           poseStartTime = null;
           currentDetectedExercise = null;
@@ -351,7 +360,7 @@ export default function PoseVideoFeed({
               }));
               inPose = false;
               poseStartTime = null;
-              playKachingSound();
+              playSuccessSound();
             } else {
               const secondsRemaining = 10 - holdSeconds;
               setPoseData((prev) => ({
@@ -364,11 +373,15 @@ export default function PoseVideoFeed({
               }));
               // Play pop sound only when first entering valid pose (first second of hold)
               if (holdSeconds === 1) {
-                playPopSound();
+                playStartPopSound();
               }
             }
           }
         } else {
+          // Play end sound if user was in pose but broke form
+          if (inPose) {
+            playEndPopSound();
+          }
           inPose = false;
           poseStartTime = null;
           setPoseData((prev) => ({
@@ -399,8 +412,9 @@ export default function PoseVideoFeed({
     isActive,
     cameraPermission,
     onExerciseChange,
-    playPopSound,
-    playKachingSound,
+    playStartPopSound,
+    playEndPopSound,
+    playSuccessSound,
     showReferenceOverlay,
   ]);
 
