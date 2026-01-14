@@ -13,7 +13,7 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch sessions for user with their reps to get exercise info
+    // Fetch sessions for user with their reps to get exercise info and accuracy
     const { data: sessions, error: sessionsError } = await supabase
         .from("exercise_sessions")
         .select(`
@@ -22,6 +22,7 @@ export async function GET() {
       completed_at,
       exercise_reps (
         exercise_id,
+        accuracy,
         exercises (
           slug,
           name
@@ -50,7 +51,7 @@ export async function GET() {
 
     // Helpers
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const weeklyMap: Record<string, { sessions: number; duration: number }> = {};
+    const weeklyMap: Record<string, { sessions: number; duration: number; accuracySum: number; repCount: number }> = {};
     const monthNames = [
         "Jan",
         "Feb",
@@ -65,7 +66,11 @@ export async function GET() {
         "Nov",
         "Dec",
     ];
-    const monthlyMap: Record<string, { sessions: number }> = {};
+    const monthlyMap: Record<string, { sessions: number; accuracySum: number; repCount: number }> = {};
+
+    // Track overall accuracy
+    let totalAccuracySum = 0;
+    let totalRepCount = 0;
 
     // Current streak calculation
     const datesSet = new Set(
@@ -89,11 +94,25 @@ export async function GET() {
             totalDuration += Math.floor((end.getTime() - start.getTime()) / 60000);
         }
 
+        // Calculate session accuracy from reps
+        const reps = s.exercise_reps || [];
+        const sessionAccuracies = reps
+            .map((r) => (r as { accuracy?: number }).accuracy ?? 0)
+            .filter((a) => a > 0);
+        const sessionAccuracySum = sessionAccuracies.reduce((sum, a) => sum + a, 0);
+        const sessionRepCount = sessionAccuracies.length;
+
+        // Add to totals
+        totalAccuracySum += sessionAccuracySum;
+        totalRepCount += sessionRepCount;
+
         // weekly
         if (start >= last7) {
             const day = dayNames[start.getDay()];
-            weeklyMap[day] = weeklyMap[day] || { sessions: 0, duration: 0 };
+            weeklyMap[day] = weeklyMap[day] || { sessions: 0, duration: 0, accuracySum: 0, repCount: 0 };
             weeklyMap[day].sessions += 1;
+            weeklyMap[day].accuracySum += sessionAccuracySum;
+            weeklyMap[day].repCount += sessionRepCount;
             if (end)
                 weeklyMap[day].duration += Math.floor((end.getTime() - start.getTime()) / 60000);
         }
@@ -101,8 +120,10 @@ export async function GET() {
         // monthly
         if (start >= last6Months) {
             const month = monthNames[start.getMonth()];
-            monthlyMap[month] = monthlyMap[month] || { sessions: 0 };
+            monthlyMap[month] = monthlyMap[month] || { sessions: 0, accuracySum: 0, repCount: 0 };
             monthlyMap[month].sessions += 1;
+            monthlyMap[month].accuracySum += sessionAccuracySum;
+            monthlyMap[month].repCount += sessionRepCount;
         }
     });
 
@@ -110,7 +131,9 @@ export async function GET() {
         day: d,
         sessions: weeklyMap[d]?.sessions || 0,
         duration: weeklyMap[d]?.duration || 0,
-        accuracy: 0,
+        accuracy: weeklyMap[d]?.repCount > 0
+            ? Math.round(weeklyMap[d].accuracySum / weeklyMap[d].repCount)
+            : 0,
     }));
 
     // Build last 6 months list ending current month
@@ -122,10 +145,13 @@ export async function GET() {
     for (let i = 5; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const month = monthNames[date.getMonth()];
+        const monthData = monthlyMap[month];
         monthlyData.push({
             month,
-            totalSessions: monthlyMap[month]?.sessions || 0,
-            avgAccuracy: 0,
+            totalSessions: monthData?.sessions || 0,
+            avgAccuracy: monthData?.repCount > 0
+                ? Math.round(monthData.accuracySum / monthData.repCount)
+                : 0,
         });
     }
 
@@ -134,14 +160,23 @@ export async function GET() {
         .sort((a, b) => new Date(b.started_at!).getTime() - new Date(a.started_at!).getTime())
         .slice(0, 5)
         .map((s) => {
-            const repCount = s.exercise_reps?.length ?? 0;
+            const reps = s.exercise_reps || [];
+            const repCount = reps.length;
+
+            // Calculate session average accuracy
+            const accuracies = reps
+                .map((r) => (r as { accuracy?: number }).accuracy ?? 0)
+                .filter((a) => a > 0);
+            const sessionAvgAccuracy = accuracies.length > 0
+                ? Math.round(accuracies.reduce((sum, a) => sum + a, 0) / accuracies.length)
+                : 0;
 
             // Find most frequent exercise in session
             let exerciseName = "Unknown";
-            if (s.exercise_reps && s.exercise_reps.length > 0) {
+            if (reps.length > 0) {
                 // Count exercise occurrences
                 const exerciseCounts = new Map<string, { count: number; name: string }>();
-                for (const rep of s.exercise_reps) {
+                for (const rep of reps) {
                     const exercise = rep.exercises as unknown as { slug: string; name: string } | null;
                     const id = rep.exercise_id ?? "unknown";
                     const name = exercise?.name ?? exercise?.slug ?? "Unknown";
@@ -166,15 +201,20 @@ export async function GET() {
                     ? `${Math.floor((new Date(s.completed_at).getTime() - new Date(s.started_at).getTime()) / 60000)} min`
                     : "-",
                 reps: repCount,
-                accuracy: 0,
-                feedback: "",
+                accuracy: sessionAvgAccuracy,
+                feedback: sessionAvgAccuracy >= 80 ? "Great form!" : sessionAvgAccuracy >= 60 ? "Good effort" : "",
             };
         });
+
+    // Calculate overall average accuracy
+    const avgAccuracy = totalRepCount > 0
+        ? Math.round(totalAccuracySum / totalRepCount)
+        : 0;
 
     return NextResponse.json({
         currentStreak: streak,
         totalSessions,
-        avgAccuracy: 0,
+        avgAccuracy,
         totalDuration,
         weeklyProgressData,
         monthlyData,

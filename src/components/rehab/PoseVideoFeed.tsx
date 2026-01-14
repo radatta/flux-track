@@ -72,7 +72,7 @@ export default function PoseVideoFeed({
     detectionEngineRef.current = new ExerciseDetectionEngine(
       toConfigKey(currentExercise)
     );
-  }, []);
+  }, [currentExercise]);
 
   // Update detection engine when currentExercise changes externally (manual selection)
   useEffect(() => {
@@ -84,6 +84,7 @@ export default function PoseVideoFeed({
 
   // Log reps to server whenever repCount increases
   const prevRepRef = useRef(0);
+  const lastRepAccuracyRef = useRef(0); // Store accuracy when rep completes
   useEffect(() => {
     if (!sessionId || !detectionEngineRef.current) return;
     if (poseData.repCount > prevRepRef.current) {
@@ -99,6 +100,7 @@ export default function PoseVideoFeed({
           repNumber: poseData.repCount,
           durationSeconds: 10, // default
           exerciseSlug: currentExercise ? fromConfigKey(currentExercise) : null,
+          accuracy: Math.round(lastRepAccuracyRef.current),
         }),
       }).catch((err) => console.error(err));
       prevRepRef.current = poseData.repCount;
@@ -323,6 +325,8 @@ export default function PoseVideoFeed({
             const holdSeconds = Math.floor(elapsed / 1000);
 
             if (elapsed >= HOLD_TARGET_MS) {
+              // Store accuracy before rep count increases (for logging)
+              lastRepAccuracyRef.current = activeExerciseResult?.accuracy || 0;
               setPoseData((prev) => ({
                 ...prev,
                 isCorrect: true,
@@ -374,7 +378,14 @@ export default function PoseVideoFeed({
       if (intervalId) clearInterval(intervalId);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, cameraPermission, onExerciseChange, playPopSound, playKachingSound, showReferenceOverlay]);
+  }, [
+    isActive,
+    cameraPermission,
+    onExerciseChange,
+    playPopSound,
+    playKachingSound,
+    showReferenceOverlay,
+  ]);
 
   const startCamera = async () => {
     try {

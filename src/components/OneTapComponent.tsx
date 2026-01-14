@@ -27,10 +27,8 @@ const OneTapComponent = () => {
 
   useEffect(() => {
     const initializeGoogleOneTap = () => {
-      console.log("Initializing Google One Tap");
       window.addEventListener("load", async () => {
         const [nonce, hashedNonce] = await generateNonce();
-        console.log("Nonce: ", nonce, hashedNonce);
 
         // check if there's already an existing session before initializing the one-tap UI
         const { data, error } = await supabase.auth.getSession();
@@ -38,28 +36,24 @@ const OneTapComponent = () => {
           console.error("Error getting session", error);
         }
         if (data.session) {
-          console.log("Session data: ", data.session);
           if (pathname !== "/") {
             router.push("/rehab/progress");
           }
           return;
         }
 
-        console.log("Initializing Google One Tap with nonce");
         window.google.accounts.id.initialize({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
           callback: async (response: CredentialResponse) => {
             try {
               // send id token returned in response.credential to supabase
-              const { data, error } = await supabase.auth.signInWithIdToken({
+              const { error } = await supabase.auth.signInWithIdToken({
                 provider: "google",
                 token: response.credential,
                 nonce,
               });
 
               if (error) throw error;
-              console.log("Session data: ", data);
-              console.log("Successfully logged in with Google One Tap");
 
               // redirect to protected page
               router.push("/rehab/progress");
@@ -72,21 +66,7 @@ const OneTapComponent = () => {
           use_fedcm_for_prompt: true,
         });
 
-        console.log("Prompting Google One Tap");
         window.google.accounts.id.prompt(); // Display the One Tap UI
-
-        window.google.accounts.id.prompt((notification) => {
-          console.log("Notification: ", notification);
-          if (notification.isNotDisplayed()) {
-            console.log("One Tap not displayed:", notification.getNotDisplayedReason());
-          }
-          if (notification.isSkippedMoment()) {
-            console.log("One Tap skipped:", notification.getSkippedReason());
-          }
-          if (notification.isDismissedMoment()) {
-            console.log("One Tap dismissed:", notification.getDismissedReason());
-          }
-        });
       });
     };
     initializeGoogleOneTap();

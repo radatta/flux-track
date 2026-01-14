@@ -16,11 +16,12 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { sessionId, repNumber, durationSeconds, exerciseSlug } = body as {
+  const { sessionId, repNumber, durationSeconds, exerciseSlug, accuracy } = body as {
     sessionId?: string;
     repNumber?: number;
     durationSeconds?: number;
     exerciseSlug?: string;
+    accuracy?: number;
   };
 
   if (!sessionId || !repNumber) {
@@ -52,8 +53,9 @@ export async function POST(request: NextRequest) {
       duration_seconds: durationSeconds,
       exercise_id: exerciseId,
       completed_at: new Date().toISOString(),
+      accuracy: accuracy ?? 0,
     })
-    .select("id, rep_number, session_id")
+    .select("id, rep_number, session_id, accuracy")
     .single();
 
   if (error) {
@@ -85,7 +87,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("exercise_reps")
-    .select("id, rep_number, duration_seconds, started_at, completed_at, session_id")
+    .select("id, rep_number, duration_seconds, started_at, completed_at, session_id, accuracy")
     .eq("session_id", sessionId);
 
   if (error) {
