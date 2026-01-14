@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
@@ -12,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 export default function NavBar() {
   const { user, loading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
   const [signingOut, setSigningOut] = useState(false);
 
   const handleSignOut = async () => {
@@ -28,7 +29,39 @@ export default function NavBar() {
         FluxTrack
       </Link>
       {loading ? null : user ? (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-1">
+            <Link
+              href="/rehab/pose"
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                pathname.startsWith("/rehab/pose")
+                  ? "text-[#6B8EFF] bg-[#F3F6FF] font-semibold"
+                  : "text-gray-600 hover:text-[#6B8EFF] hover:bg-[#F3F6FF]"
+              }`}
+            >
+              Pose
+            </Link>
+            <Link
+              href="/rehab/progress"
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                pathname.startsWith("/rehab/progress")
+                  ? "text-[#6B8EFF] bg-[#F3F6FF] font-semibold"
+                  : "text-gray-600 hover:text-[#6B8EFF] hover:bg-[#F3F6FF]"
+              }`}
+            >
+              Progress
+            </Link>
+            <Link
+              href="/rehab/settings"
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                pathname.startsWith("/rehab/settings")
+                  ? "text-[#6B8EFF] bg-[#F3F6FF] font-semibold"
+                  : "text-gray-600 hover:text-[#6B8EFF] hover:bg-[#F3F6FF]"
+              }`}
+            >
+              Settings
+            </Link>
+          </div>
           <Popover>
             <PopoverTrigger asChild>
               {user.user_metadata?.avatar_url ? (
