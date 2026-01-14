@@ -7,7 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, Play, Pause, RotateCcw } from "lucide-react";
 import * as tf from "@tensorflow/tfjs";
 import * as poseDetection from "@tensorflow-models/pose-detection";
-import { drawKeypointConnections, drawKeypointsWithCoords } from "@/utils/drawUtils";
+import {
+  drawKeypointConnections,
+  drawKeypointsWithCoords,
+  drawReferenceOverlay,
+} from "@/utils/drawUtils";
 import { exerciseConfigs } from "@/utils/exerciseConfig";
 import type { NamedKeypoints } from "@/utils/exerciseConfig";
 import { PoseData } from "./poseTypes";
@@ -19,6 +23,7 @@ interface PoseVideoFeedProps {
   onPoseDataChange: (data: PoseData) => void;
   onSessionTimeChange: (time: number) => void;
   onExerciseChange?: (exercise: string) => void; // For auto-switching
+  showReferenceOverlay?: boolean;
 }
 
 // Constants mirroring original logic
@@ -41,6 +46,7 @@ export default function PoseVideoFeed({
   onPoseDataChange,
   onSessionTimeChange,
   onExerciseChange,
+  showReferenceOverlay = true,
 }: PoseVideoFeedProps) {
   const [mounted, setMounted] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -190,6 +196,24 @@ export default function PoseVideoFeed({
                 config.keypointConnections,
                 SCORE_THRESHOLD
               );
+
+              // Draw reference overlay if enabled and reference data exists
+              if (
+                showReferenceOverlay &&
+                config.referenceKeypoints &&
+                config.referenceConnections
+              ) {
+                drawReferenceOverlay(
+                  ctx,
+                  config.referenceKeypoints,
+                  config.referenceConnections,
+                  keypoints,
+                  scaleX,
+                  scaleY,
+                  0.5,
+                  SCORE_THRESHOLD
+                );
+              }
             }
           }
         }
@@ -350,7 +374,7 @@ export default function PoseVideoFeed({
       if (intervalId) clearInterval(intervalId);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, cameraPermission, onExerciseChange, playPopSound, playKachingSound]);
+  }, [isActive, cameraPermission, onExerciseChange, playPopSound, playKachingSound, showReferenceOverlay]);
 
   const startCamera = async () => {
     try {

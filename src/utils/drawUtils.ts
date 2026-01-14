@@ -1,4 +1,5 @@
 import { Keypoint } from "@tensorflow-models/pose-detection";
+import { ReferenceKeypoint } from "./exerciseConfig";
 
 export function drawKeypointsWithCoords(
   ctx: CanvasRenderingContext2D,
@@ -95,4 +96,80 @@ export function drawKeypointConnections(
       ctx.restore();
     }
   });
+}
+
+/**
+ * Draws a strong visual guide for the secondary check: keeping shoulders level.
+ * Only shows when shoulders are NOT level (needs adjustment).
+ */
+export function drawReferenceOverlay(
+  ctx: CanvasRenderingContext2D,
+  _referenceKeypoints: ReferenceKeypoint[],
+  _referenceConnections: [string, string][],
+  userKeypoints: Keypoint[],
+  scaleX: number,
+  scaleY: number,
+  _opacity?: number,
+  scoreThreshold: number = 0.3
+): void {
+  // Get user's shoulder keypoints
+  const getKp = (name: string) =>
+    userKeypoints.find(
+      (kp) => kp.name === name && kp.score && kp.score > scoreThreshold
+    );
+
+  const userLeftShoulder = getKp("left_shoulder");
+  const userRightShoulder = getKp("right_shoulder");
+
+  if (!userLeftShoulder || !userRightShoulder) return;
+
+  // Check if shoulders are unlevel (needs adjustment)
+  // Threshold matches SHOULDER_LEVEL_THRESHOLD in exerciseConfig.ts
+  const shoulderYDiff = Math.abs(userLeftShoulder.y - userRightShoulder.y);
+  const SHOULDER_LEVEL_THRESHOLD = 30;
+
+  // Only show the guide if shoulders need adjustment
+  if (shoulderYDiff <= SHOULDER_LEVEL_THRESHOLD) return;
+
+  // Calculate the level shoulder position (midpoint Y)
+  const shoulderMidY = (userLeftShoulder.y + userRightShoulder.y) / 2;
+  const leftX = userLeftShoulder.x * scaleX;
+  const rightX = userRightShoulder.x * scaleX;
+  const levelY = shoulderMidY * scaleY;
+
+  // Extend the line beyond shoulders for visibility
+  const padding = 40;
+
+  ctx.save();
+
+  // Draw the "KEEP LEVEL" reference line - BOLD and BRIGHT
+  ctx.strokeStyle = "#00E5CC"; // Bright teal
+  ctx.lineWidth = 5;
+  ctx.setLineDash([15, 8]);
+
+  ctx.beginPath();
+  ctx.moveTo(leftX - padding, levelY);
+  ctx.lineTo(rightX + padding, levelY);
+  ctx.stroke();
+
+  // Draw endpoint markers (circles at each end)
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#00E5CC";
+
+  ctx.beginPath();
+  ctx.arc(leftX - padding, levelY, 8, 0, 2 * Math.PI);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(rightX + padding, levelY, 8, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Add a label
+  ctx.font = "bold 16px sans-serif";
+  ctx.fillStyle = "#00E5CC";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillText("KEEP SHOULDERS LEVEL", (leftX + rightX) / 2, levelY - 15);
+
+  ctx.restore();
 }

@@ -20,6 +20,7 @@ export function LivePoseEstimation() {
     repCount: 0,
   });
   const [sessionTime, setSessionTime] = useState<number>(0);
+  const [showReferenceOverlay, setShowReferenceOverlay] = useState<boolean>(true);
 
   const [exercises, setExercises] = useState<{ slug: string; name: string }[]>([]);
 
@@ -47,6 +48,8 @@ export function LivePoseEstimation() {
           onExerciseChange={setCurrentExercise}
           exercises={exercises}
           autoDetectionEnabled={true}
+          showReferenceOverlay={showReferenceOverlay}
+          onToggleReferenceOverlay={() => setShowReferenceOverlay((prev) => !prev)}
         />
 
         {/* Main Grid */}
@@ -56,6 +59,7 @@ export function LivePoseEstimation() {
             onPoseDataChange={setPoseData}
             onSessionTimeChange={setSessionTime}
             onExerciseChange={setCurrentExercise}
+            showReferenceOverlay={showReferenceOverlay}
           />
           <PoseSidebar poseData={poseData} sessionTime={sessionTime} />
         </div>

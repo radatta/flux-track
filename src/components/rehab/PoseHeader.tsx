@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
 interface PoseHeaderProps {
@@ -16,6 +16,8 @@ interface PoseHeaderProps {
   onExerciseChange: (exercise: string) => void;
   exercises: { slug: string; name: string }[];
   autoDetectionEnabled?: boolean;
+  showReferenceOverlay?: boolean;
+  onToggleReferenceOverlay?: () => void;
 }
 
 export default function PoseHeader({
@@ -23,6 +25,8 @@ export default function PoseHeader({
   onExerciseChange,
   exercises,
   autoDetectionEnabled = true,
+  showReferenceOverlay = true,
+  onToggleReferenceOverlay,
 }: PoseHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-6">
@@ -52,6 +56,24 @@ export default function PoseHeader({
             </div>
           )}
         </div>
+        {onToggleReferenceOverlay && (
+          <Button
+            variant={showReferenceOverlay ? "default" : "outline"}
+            onClick={onToggleReferenceOverlay}
+            className={
+              showReferenceOverlay
+                ? "bg-[#6B8EFF] hover:bg-[#6B8EFF]/90"
+                : "border-[#6B8EFF]/20 hover:bg-[#6B8EFF]/10"
+            }
+          >
+            {showReferenceOverlay ? (
+              <Eye className="h-4 w-4 mr-2" />
+            ) : (
+              <EyeOff className="h-4 w-4 mr-2" />
+            )}
+            Reference
+          </Button>
+        )}
         <Button asChild variant="outline" className="border-[#6B8EFF]/20">
           <Link href="/rehab/settings">
             <Settings className="h-4 w-4 mr-2" />

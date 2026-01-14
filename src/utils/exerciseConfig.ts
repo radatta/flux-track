@@ -14,6 +14,13 @@ export interface SecondaryCheck {
   message: string;
 }
 
+/** Reference keypoint for ideal pose overlay (normalized 0-1 coordinates) */
+export interface ReferenceKeypoint {
+  name: string;
+  x: number; // 0-1 normalized position
+  y: number; // 0-1 normalized position
+}
+
 export interface ExerciseConfig {
   /** List of keypoint names that must be present with sufficient score */
   requiredKeypoints: string[];
@@ -36,6 +43,10 @@ export interface ExerciseConfig {
     /** Message shown once the rep is successfully completed */
     success: string;
   };
+  /** Reference keypoints for ideal pose overlay */
+  referenceKeypoints?: ReferenceKeypoint[];
+  /** Connections between reference keypoints to draw lines */
+  referenceConnections?: [string, string][];
 }
 
 // Threshold constants specific to certain exercises
@@ -77,6 +88,20 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
         `👉 Hold head tilt right: ${secondsRemaining}s left`,
       success: "✅ Good rep! Head tilt right held for 10s.",
     },
+    // Reference pose: head tilted to the right (right ear lower than left)
+    referenceKeypoints: [
+      { name: "nose", x: 0.5, y: 0.3 },
+      { name: "left_ear", x: 0.35, y: 0.25 },
+      { name: "right_ear", x: 0.65, y: 0.4 }, // Lower = tilted right
+      { name: "left_shoulder", x: 0.2, y: 0.7 },
+      { name: "right_shoulder", x: 0.8, y: 0.7 },
+    ],
+    referenceConnections: [
+      ["left_ear", "right_ear"],
+      ["left_shoulder", "right_shoulder"],
+      ["nose", "left_ear"],
+      ["nose", "right_ear"],
+    ],
   },
   head_tilt_left: {
     requiredKeypoints: ["left_ear", "right_ear", "left_shoulder", "right_shoulder"],
@@ -108,6 +133,20 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
         `👉 Hold head tilt left: ${secondsRemaining}s left`,
       success: "✅ Good rep! Head tilt left held for 10s.",
     },
+    // Reference pose: head tilted to the left (left ear lower than right)
+    referenceKeypoints: [
+      { name: "nose", x: 0.5, y: 0.3 },
+      { name: "left_ear", x: 0.35, y: 0.4 }, // Lower = tilted left
+      { name: "right_ear", x: 0.65, y: 0.25 },
+      { name: "left_shoulder", x: 0.2, y: 0.7 },
+      { name: "right_shoulder", x: 0.8, y: 0.7 },
+    ],
+    referenceConnections: [
+      ["left_ear", "right_ear"],
+      ["left_shoulder", "right_shoulder"],
+      ["nose", "left_ear"],
+      ["nose", "right_ear"],
+    ],
   },
   /**
    * Neck rotation to the right (looking towards your right shoulder)
@@ -167,6 +206,20 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
         `👉 Hold head rotation right: ${secondsRemaining}s left`,
       success: "✅ Good rep! Head rotation right held for 10s.",
     },
+    // Reference pose: head rotated to the right (nose closer to right ear)
+    referenceKeypoints: [
+      { name: "nose", x: 0.6, y: 0.3 }, // Shifted right
+      { name: "left_ear", x: 0.3, y: 0.32 }, // Visible (further from nose)
+      { name: "right_ear", x: 0.65, y: 0.32 }, // Closer to nose
+      { name: "left_shoulder", x: 0.2, y: 0.7 },
+      { name: "right_shoulder", x: 0.8, y: 0.7 },
+    ],
+    referenceConnections: [
+      ["nose", "right_ear"],
+      ["nose", "left_ear"],
+      ["left_ear", "right_ear"],
+      ["left_shoulder", "right_shoulder"],
+    ],
   },
   /**
    * Neck rotation to the left (looking towards your left shoulder)
@@ -226,6 +279,20 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
         `👉 Hold head rotation left: ${secondsRemaining}s left`,
       success: "✅ Good rep! Head rotation left held for 10s.",
     },
+    // Reference pose: head rotated to the left (nose closer to left ear)
+    referenceKeypoints: [
+      { name: "nose", x: 0.4, y: 0.3 }, // Shifted left
+      { name: "left_ear", x: 0.35, y: 0.32 }, // Closer to nose
+      { name: "right_ear", x: 0.7, y: 0.32 }, // Visible (further from nose)
+      { name: "left_shoulder", x: 0.2, y: 0.7 },
+      { name: "right_shoulder", x: 0.8, y: 0.7 },
+    ],
+    referenceConnections: [
+      ["nose", "left_ear"],
+      ["nose", "right_ear"],
+      ["left_ear", "right_ear"],
+      ["left_shoulder", "right_shoulder"],
+    ],
   },
   /**
    * Neck circumduction (full circular motion). For simplicity we approximate by
@@ -274,5 +341,19 @@ export const exerciseConfigs: Record<string, ExerciseConfig> = {
         `👉 Hold chin to chest: ${secondsRemaining}s left`,
       success: "✅ Good rep! Chin to chest held for 10s.",
     },
+    // Reference pose: chin to chest (nose below ears)
+    referenceKeypoints: [
+      { name: "nose", x: 0.5, y: 0.45 }, // Lower (chin toward chest)
+      { name: "left_ear", x: 0.35, y: 0.28 },
+      { name: "right_ear", x: 0.65, y: 0.28 },
+      { name: "left_shoulder", x: 0.2, y: 0.7 },
+      { name: "right_shoulder", x: 0.8, y: 0.7 },
+    ],
+    referenceConnections: [
+      ["nose", "left_ear"],
+      ["nose", "right_ear"],
+      ["left_ear", "right_ear"],
+      ["left_shoulder", "right_shoulder"],
+    ],
   },
 };
